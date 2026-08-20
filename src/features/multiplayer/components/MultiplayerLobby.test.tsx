@@ -40,7 +40,7 @@ describe('MultiplayerLobby', () => {
             seed: 1,
             currentGeneration: 2,
             bestFitness: 10,
-            config: {} as never,
+            config: { simulationVersion: 'race-sim-v1' } as never,
             createdAt: '',
             updatedAt: '',
             startedAt: null,

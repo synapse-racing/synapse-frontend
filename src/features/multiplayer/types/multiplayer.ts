@@ -33,6 +33,7 @@ export interface RacePlayerState {
   laps: number
   finishedAt: number | null
   disconnected: boolean
+  eliminated: boolean
   rank: number
 }
 
