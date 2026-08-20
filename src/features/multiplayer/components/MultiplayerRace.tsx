@@ -92,7 +92,9 @@ export function MultiplayerRace({
                       {player.disconnected
                         ? 'Desconectado'
                         : player.eliminated
-                          ? 'Eliminado por colision'
+                          ? player.eliminationReason === 'STALLED'
+                            ? 'Eliminado por inactividad'
+                            : 'Eliminado por colision'
                         : player.finishedAt
                           ? 'Finalizo'
                           : `${player.passedCheckpoints}/4 checkpoints`}

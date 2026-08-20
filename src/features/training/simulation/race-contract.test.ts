@@ -48,4 +48,15 @@ describe('race simulation contract', () => {
     expect(state.collided).toBe(true)
     expect(state.z).toBe(-23.34)
   })
+
+  it('terminates an agent after three seconds without moving', () => {
+    const state = createSimulationState()
+    let result = stepSimulation(state, 0, 0)
+    for (let step = 1; step < 60; step += 1) {
+      result = stepSimulation(state, 0, 0)
+    }
+
+    expect(result).toMatchObject({ stalled: true, finished: true })
+    expect(state.elapsedSteps).toBe(60)
+  })
 })
