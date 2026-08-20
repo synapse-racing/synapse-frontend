@@ -8,11 +8,14 @@ import {
 import { MultiplayerLobby } from '../components/MultiplayerLobby.tsx'
 import { MultiplayerRace } from '../components/MultiplayerRace.tsx'
 import type {
-  RaceInput,
   RaceResult,
   RaceSnapshot,
   RoomState,
 } from '../types/multiplayer.ts'
+import {
+  listTrainingRuns,
+  type TrainingRun,
+} from '../../training/api/training.api.ts'
 
 type ConnectionState = 'connecting' | 'connected' | 'disconnected'
 
@@ -24,6 +27,7 @@ export function MultiplayerPage() {
   const [snapshot, setSnapshot] = useState<RaceSnapshot | null>(null)
   const [result, setResult] = useState<RaceResult | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [trainingRuns, setTrainingRuns] = useState<TrainingRun[]>([])
 
   useEffect(() => {
     if (!auth.accessToken) return
@@ -59,6 +63,13 @@ export function MultiplayerPage() {
     }
   }, [auth.accessToken])
 
+  useEffect(() => {
+    if (!auth.accessToken) return
+    void listTrainingRuns(auth.accessToken)
+      .then(setTrainingRuns)
+      .catch(() => setError('No se pudieron cargar tus pilotos NEAT'))
+  }, [auth.accessToken])
+
   function leaveRoom() {
     socketRef.current?.emit('room:leave')
     setRoom(null)
@@ -83,7 +94,6 @@ export function MultiplayerPage() {
       {racing && snapshot ? (
         <MultiplayerRace
           currentUserId={currentUserId}
-          onInput={(input: RaceInput) => socketRef.current?.emit('race:input', input)}
           onLeave={leaveRoom}
           result={result}
           room={room}
@@ -107,8 +117,12 @@ export function MultiplayerPage() {
           onReady={(ready) =>
             socketRef.current?.emit('player:ready', { ready })
           }
+          onSelectGenome={(trainingRunId) =>
+            socketRef.current?.emit('player:select-genome', { trainingRunId })
+          }
           onStart={() => socketRef.current?.emit('race:start')}
           room={room}
+          trainingRuns={trainingRuns}
         />
       )}
     </main>

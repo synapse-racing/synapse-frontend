@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
 import type { RoomState } from '../types/multiplayer.ts'
+import type { TrainingRun } from '../../training/api/training.api.ts'
 
 interface MultiplayerLobbyProps {
   busy: boolean
@@ -10,8 +11,10 @@ interface MultiplayerLobbyProps {
   onJoin: (code: string) => void
   onLeave: () => void
   onReady: (ready: boolean) => void
+  onSelectGenome: (trainingRunId: string) => void
   onStart: () => void
   room: RoomState | null
+  trainingRuns: TrainingRun[]
 }
 
 export function MultiplayerLobby({
@@ -22,8 +25,10 @@ export function MultiplayerLobby({
   onJoin,
   onLeave,
   onReady,
+  onSelectGenome,
   onStart,
   room,
+  trainingRuns,
 }: MultiplayerLobbyProps) {
   const [code, setCode] = useState('')
   const [maxPlayers, setMaxPlayers] = useState(4)
@@ -106,6 +111,7 @@ export function MultiplayerLobby({
             <div>
               <strong>{player.username}</strong>
               <small>{player.userId === room.hostUserId ? 'Host' : 'Piloto'}</small>
+              <small>{player.genomeName ?? 'Sin piloto NEAT'}</small>
             </div>
             <i className={player.ready ? 'is-ready' : ''}>
               {player.ready ? 'Listo' : 'Esperando'}
@@ -115,10 +121,30 @@ export function MultiplayerLobby({
       </div>
 
       {error && <p className="multiplayer-error">{error}</p>}
+      <label>
+        Piloto NEAT
+        <select
+          disabled={currentPlayer?.ready}
+          onChange={(event) => onSelectGenome(event.target.value)}
+          value={
+            trainingRuns.find((run) => run.name === currentPlayer?.genomeName)?.id ?? ''
+          }
+        >
+          <option value="">Selecciona un entrenamiento</option>
+          {trainingRuns
+            .filter((run) => run.currentGeneration > 0)
+            .map((run) => (
+              <option key={run.id} value={run.id}>
+                {run.name} · gen. {run.currentGeneration}
+              </option>
+            ))}
+        </select>
+      </label>
       <div className="lobby-actions">
         <button onClick={onLeave}>Salir</button>
         <button
           className="primary-button"
+          disabled={!currentPlayer?.genomeName}
           onClick={() => onReady(!currentPlayer?.ready)}
         >
           {currentPlayer?.ready ? 'Cancelar listo' : 'Estoy listo'}
