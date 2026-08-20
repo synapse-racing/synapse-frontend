@@ -91,6 +91,10 @@ export function MultiplayerLobby({
 
   const currentPlayer = room.players.find((player) => player.userId === currentUserId)
   const isHost = room.hostUserId === currentUserId
+  const compatibleRuns = trainingRuns.filter(
+    (run) =>
+      run.currentGeneration > 0 && run.config.simulationVersion === 'race-sim-v1',
+  )
   const canStart =
     isHost && room.players.length >= 2 && room.players.every((player) => player.ready)
 
@@ -131,15 +135,18 @@ export function MultiplayerLobby({
           }
         >
           <option value="">Selecciona un entrenamiento</option>
-          {trainingRuns
-            .filter((run) => run.currentGeneration > 0)
-            .map((run) => (
+          {compatibleRuns.map((run) => (
               <option key={run.id} value={run.id}>
                 {run.name} · gen. {run.currentGeneration}
               </option>
             ))}
         </select>
       </label>
+      {compatibleRuns.length === 0 && (
+        <p className="multiplayer-error">
+          Entrena al menos una generacion nueva con race-sim-v1 para competir.
+        </p>
+      )}
       <div className="lobby-actions">
         <button onClick={onLeave}>Salir</button>
         <button

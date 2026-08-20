@@ -91,6 +91,8 @@ export function MultiplayerRace({
                     <small>
                       {player.disconnected
                         ? 'Desconectado'
+                        : player.eliminated
+                          ? 'Eliminado por colision'
                         : player.finishedAt
                           ? 'Finalizo'
                           : `${player.passedCheckpoints}/4 checkpoints`}

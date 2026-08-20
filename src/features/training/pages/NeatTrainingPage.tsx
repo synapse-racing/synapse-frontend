@@ -71,7 +71,6 @@ export function NeatTrainingPage() {
   const [alive, setAlive] = useState(engine.config.populationSize)
   const [metrics, setMetrics] = useState(() => createInitialMetrics(engine))
   const [currentBest, setCurrentBest] = useState(0)
-  const [forceFinishSignal, setForceFinishSignal] = useState(0)
   const [runId, setRunId] = useState(0)
   const [selectedRun, setSelectedRun] = useState<TrainingRun | null>(null)
   const [selectorBusy, setSelectorBusy] = useState(false)
@@ -118,7 +117,6 @@ export function NeatTrainingPage() {
       speciesCount: nextEngine.currentSpecies().length,
     })
     setCurrentBest(0)
-    setForceFinishSignal(0)
     setRunId((value) => value + 1)
     setSelectedRun(run)
     setPersistenceStatus(run.currentGeneration > 0 ? 'saved' : 'idle')
@@ -312,12 +310,10 @@ export function NeatTrainingPage() {
       >
         <Suspense fallback={null}>
           <NeatTrainingScene
-            forceFinishSignal={forceFinishSignal}
             generationKey={generationKey}
             genomes={genomes}
             onAgentFinish={handleAgentFinish}
             onCheckpoint={handleCheckpoint}
-            onTimeout={() => setForceFinishSignal((value) => value + 1)}
             running={running}
             track={prototypeTrack}
           />

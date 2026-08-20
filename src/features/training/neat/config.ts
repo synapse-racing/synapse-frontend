@@ -1,4 +1,5 @@
 export interface NeatConfig {
+  simulationVersion: 'race-sim-v1'
   populationSize: number
   inputCount: number
   outputCount: number
@@ -11,6 +12,7 @@ export interface NeatConfig {
 }
 
 export const defaultNeatConfig: NeatConfig = {
+  simulationVersion: 'race-sim-v1',
   populationSize: 24,
   inputCount: 6,
   outputCount: 2,

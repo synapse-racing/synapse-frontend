@@ -1,30 +1,24 @@
 import { OrbitControls } from '@react-three/drei'
-import { Physics } from '@react-three/rapier'
 import type { AgentRuntime } from '../domain/fitness.ts'
 import type { TrackDefinition } from '../domain/track.ts'
 import type { Genome } from '../neat/genes.ts'
-import { GenerationClock } from './GenerationClock.tsx'
 import { NeatVehicle } from './NeatVehicle.tsx'
-import { Track } from './Track.tsx'
+import { TrackVisual } from './TrackVisual.tsx'
 
 interface NeatTrainingSceneProps {
-  forceFinishSignal: number
   generationKey: string
   genomes: Genome[]
   onAgentFinish: (genomeId: string, runtime: AgentRuntime) => void
   onCheckpoint: (index: number, rigidBodyName: string) => void
-  onTimeout: () => void
   running: boolean
   track: TrackDefinition
 }
 
 export function NeatTrainingScene({
-  forceFinishSignal,
   generationKey,
   genomes,
   onAgentFinish,
   onCheckpoint,
-  onTimeout,
   running,
   track,
 }: NeatTrainingSceneProps) {
@@ -35,26 +29,18 @@ export function NeatTrainingScene({
       <ambientLight intensity={0.75} />
       <hemisphereLight args={['#b8d9eb', '#111820', 0.8]} />
       <directionalLight position={[12, 24, 8]} intensity={2} castShadow />
-      <Physics gravity={[0, -9.81, 0]} timeStep={1 / 60} paused={!running}>
-        <Track definition={track} onCheckpoint={onCheckpoint} />
-        {genomes.map((genome, index) => (
-          <NeatVehicle
-            key={`${generationKey}-${genome.id}`}
-            forceFinishSignal={forceFinishSignal}
-            genome={genome}
-            index={index}
-            onFinish={onAgentFinish}
-            running={running}
-            track={track}
-          />
-        ))}
-      </Physics>
-      <GenerationClock
-        generationKey={generationKey}
-        maxSeconds={28}
-        onTimeout={onTimeout}
-        running={running}
-      />
+      <TrackVisual definition={track} />
+      {genomes.map((genome, index) => (
+        <NeatVehicle
+          key={`${generationKey}-${genome.id}`}
+          genome={genome}
+          index={index}
+          onFinish={onAgentFinish}
+          onCheckpoint={onCheckpoint}
+          running={running}
+          track={track}
+        />
+      ))}
       <OrbitControls
         makeDefault
         target={[0, 0, 0]}
