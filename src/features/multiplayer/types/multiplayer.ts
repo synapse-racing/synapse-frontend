@@ -4,6 +4,7 @@ export interface RoomPlayer {
   userId: string
   username: string
   ready: boolean
+  genomeName: string | null
 }
 
 export interface RoomState {
@@ -67,6 +68,6 @@ export interface ClientToServerEvents {
   'room:join': (input: { code: string }) => void
   'room:leave': () => void
   'player:ready': (input: { ready: boolean }) => void
+  'player:select-genome': (input: { trainingRunId: string }) => void
   'race:start': () => void
-  'race:input': (input: RaceInput) => void
 }

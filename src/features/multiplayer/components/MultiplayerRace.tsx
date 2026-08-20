@@ -1,32 +1,16 @@
-import { KeyboardControls, OrbitControls } from '@react-three/drei'
+import { OrbitControls } from '@react-three/drei'
 import { Canvas } from '@react-three/fiber'
-import type { KeyboardControlsEntry } from '@react-three/drei'
-import {
-  vehicleControlNames,
-  type VehicleControlName,
-} from '../../training/domain/controls.ts'
 import { prototypeTrack } from '../../training/domain/track.ts'
 import { TrackVisual } from '../../training/components/TrackVisual.tsx'
 import type {
-  RaceInput,
   RaceResult,
   RaceSnapshot,
   RoomState,
 } from '../types/multiplayer.ts'
-import { RaceInputPublisher } from './RaceInputPublisher.tsx'
 import { RemoteRaceCar } from './RemoteRaceCar.tsx'
-
-const keyboardMap: KeyboardControlsEntry<VehicleControlName>[] = [
-  { name: vehicleControlNames.forward, keys: ['KeyW', 'ArrowUp'] },
-  { name: vehicleControlNames.reverse, keys: ['KeyS', 'ArrowDown'] },
-  { name: vehicleControlNames.left, keys: ['KeyA', 'ArrowLeft'] },
-  { name: vehicleControlNames.right, keys: ['KeyD', 'ArrowRight'] },
-  { name: vehicleControlNames.reset, keys: [] },
-]
 
 interface MultiplayerRaceProps {
   currentUserId: string
-  onInput: (input: RaceInput) => void
   onLeave: () => void
   result: RaceResult | null
   room: RoomState
@@ -35,7 +19,6 @@ interface MultiplayerRaceProps {
 
 export function MultiplayerRace({
   currentUserId,
-  onInput,
   onLeave,
   result,
   room,
@@ -47,8 +30,7 @@ export function MultiplayerRace({
   const countdown = Math.max(0, Math.ceil((snapshot.startAt - Date.now()) / 1000))
 
   return (
-    <KeyboardControls map={keyboardMap}>
-      <section className="multiplayer-race">
+    <section className="multiplayer-race">
         <Canvas
           shadows
           camera={{ position: [0, 40, 35], fov: 50, near: 0.1, far: 140 }}
@@ -66,10 +48,6 @@ export function MultiplayerRace({
               player={player}
             />
           ))}
-          <RaceInputPublisher
-            enabled={snapshot.status === 'RACING' && !currentPlayer?.finishedAt}
-            onInput={onInput}
-          />
           <OrbitControls
             makeDefault
             target={[0, 0, 0]}
@@ -126,7 +104,6 @@ export function MultiplayerRace({
             </div>
           </div>
         )}
-      </section>
-    </KeyboardControls>
+    </section>
   )
 }

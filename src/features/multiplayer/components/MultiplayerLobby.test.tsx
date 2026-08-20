@@ -10,8 +10,8 @@ const room: RoomState = {
   status: 'LOBBY',
   maxPlayers: 4,
   players: [
-    { userId: 'host', username: 'Host', ready: true },
-    { userId: 'guest', username: 'Guest', ready: false },
+    { userId: 'host', username: 'Host', ready: true, genomeName: 'Host AI' },
+    { userId: 'guest', username: 'Guest', ready: false, genomeName: 'Guest AI' },
   ],
 }
 
@@ -29,8 +29,24 @@ describe('MultiplayerLobby', () => {
         onJoin={vi.fn()}
         onLeave={vi.fn()}
         onReady={onReady}
+        onSelectGenome={vi.fn()}
         onStart={vi.fn()}
         room={room}
+        trainingRuns={[
+          {
+            id: 'run-1',
+            name: 'Guest AI',
+            status: 'PAUSED',
+            seed: 1,
+            currentGeneration: 2,
+            bestFitness: 10,
+            config: {} as never,
+            createdAt: '',
+            updatedAt: '',
+            startedAt: null,
+            finishedAt: null,
+          },
+        ]}
       />,
     )
 
