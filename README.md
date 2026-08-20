@@ -1,32 +1,57 @@
-# React + TypeScript + Vite
+# Synapse Racing - Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Frontend React de la plataforma de entrenamiento NEAT y carreras multijugador.
 
-Currently, two official plugins are available:
+## Requisitos
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- Node.js 24 o superior.
+- Corepack habilitado.
+- Backend ejecutandose en `http://localhost:3000`.
 
-## React Compiler
+## Instalacion
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```bash
+corepack enable
+pnpm install
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+Crea el entorno local a partir de `.env.example` y ajusta la URL si el backend utiliza otro puerto:
+
+```text
+VITE_API_URL=http://localhost:3000/api
+```
+
+La imagen de produccion usa `/api`, servido bajo el mismo origen por Nginx. El contenedor incluye fallback para rutas SPA y proxy WebSocket.
+
+## Comandos
+
+```bash
+pnpm dev
+pnpm lint
+pnpm test
+pnpm build
+pnpm preview
+```
+
+## Estructura inicial
+
+```text
+src/
+  app/       # Providers globales
+  features/  # Autenticacion y futuras funcionalidades
+  pages/     # Paginas enrutables
+  shared/    # Configuracion y utilidades compartidas
+  test/      # Setup de pruebas
+```
+
+El plan del producto esta en [`PROJECT_PLAN.md`](./PROJECT_PLAN.md) y el avance spec-driven en [`specs/README.md`](./specs/README.md).
+
+La aplicacion dispone actualmente de registro, login, recuperacion de sesion, logout y dashboard protegido. El access token se conserva solo en memoria y el refresh token se administra mediante una cookie `HttpOnly`.
+
+El laboratorio `/training` incluye un circuito 3D, conduccion manual con WASD o flechas, fisica Rapier, camara de seguimiento, cinco raycasts, checkpoints y telemetria. Pulsa `R` para reiniciar el prototipo.
+
+El entrenamiento `/training/neat` ejecuta una poblacion de 24 autos con redes feed-forward, innovaciones, mutaciones estructurales, crossover, especiacion y elitismo. El panel permite iniciar, pausar y reiniciar de forma reproducible con la misma semilla.
+
+Los entrenamientos NEAT se guardan en PostgreSQL al terminar cada generacion. El selector permite crear, cargar y eliminar ejecuciones; los snapshots versionados restauran poblacion, PRNG e innovaciones para continuar de forma determinista.
+
+El modo `/multiplayer` ofrece salas privadas de 2 a 4 jugadores mediante Socket.IO. NestJS simula la carrera a 20 Hz, publica snapshots a 10 Hz y valida checkpoints y resultados; React interpola los autos dentro de la pista 3D.

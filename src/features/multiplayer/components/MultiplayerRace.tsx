@@ -1,0 +1,132 @@
+import { KeyboardControls, OrbitControls } from '@react-three/drei'
+import { Canvas } from '@react-three/fiber'
+import type { KeyboardControlsEntry } from '@react-three/drei'
+import {
+  vehicleControlNames,
+  type VehicleControlName,
+} from '../../training/domain/controls.ts'
+import { prototypeTrack } from '../../training/domain/track.ts'
+import { TrackVisual } from '../../training/components/TrackVisual.tsx'
+import type {
+  RaceInput,
+  RaceResult,
+  RaceSnapshot,
+  RoomState,
+} from '../types/multiplayer.ts'
+import { RaceInputPublisher } from './RaceInputPublisher.tsx'
+import { RemoteRaceCar } from './RemoteRaceCar.tsx'
+
+const keyboardMap: KeyboardControlsEntry<VehicleControlName>[] = [
+  { name: vehicleControlNames.forward, keys: ['KeyW', 'ArrowUp'] },
+  { name: vehicleControlNames.reverse, keys: ['KeyS', 'ArrowDown'] },
+  { name: vehicleControlNames.left, keys: ['KeyA', 'ArrowLeft'] },
+  { name: vehicleControlNames.right, keys: ['KeyD', 'ArrowRight'] },
+  { name: vehicleControlNames.reset, keys: [] },
+]
+
+interface MultiplayerRaceProps {
+  currentUserId: string
+  onInput: (input: RaceInput) => void
+  onLeave: () => void
+  result: RaceResult | null
+  room: RoomState
+  snapshot: RaceSnapshot
+}
+
+export function MultiplayerRace({
+  currentUserId,
+  onInput,
+  onLeave,
+  result,
+  room,
+  snapshot,
+}: MultiplayerRaceProps) {
+  const currentPlayer = snapshot.players.find(
+    (player) => player.userId === currentUserId,
+  )
+  const countdown = Math.max(0, Math.ceil((snapshot.startAt - Date.now()) / 1000))
+
+  return (
+    <KeyboardControls map={keyboardMap}>
+      <section className="multiplayer-race">
+        <Canvas
+          shadows
+          camera={{ position: [0, 40, 35], fov: 50, near: 0.1, far: 140 }}
+          dpr={[1, 1.35]}
+        >
+          <color attach="background" args={['#071018']} />
+          <ambientLight intensity={0.8} />
+          <hemisphereLight args={['#c5e6f2', '#101820', 0.8]} />
+          <directionalLight position={[12, 24, 8]} intensity={2} castShadow />
+          <TrackVisual definition={prototypeTrack} />
+          {snapshot.players.map((player) => (
+            <RemoteRaceCar
+              key={player.userId}
+              isCurrentUser={player.userId === currentUserId}
+              player={player}
+            />
+          ))}
+          <RaceInputPublisher
+            enabled={snapshot.status === 'RACING' && !currentPlayer?.finishedAt}
+            onInput={onInput}
+          />
+          <OrbitControls
+            makeDefault
+            target={[0, 0, 0]}
+            minDistance={24}
+            maxDistance={65}
+            maxPolarAngle={Math.PI / 2.15}
+          />
+        </Canvas>
+
+        <div className="race-hud">
+          <header>
+            <button onClick={onLeave}>Abandonar</button>
+            <span>Sala {room.code}</span>
+            <strong>{snapshot.status === 'RACING' ? 'EN CARRERA' : snapshot.status}</strong>
+          </header>
+          <div className="race-position">
+            <span>Posicion</span>
+            <strong>{currentPlayer?.rank ?? '-'}</strong>
+            <small>de {snapshot.players.length}</small>
+          </div>
+          <div className="race-progress">
+            <span>Vuelta {Math.min(1, (currentPlayer?.laps ?? 0) + 1)}/1</span>
+            <span>Checkpoint {(currentPlayer?.expectedCheckpoint ?? 0) + 1}/4</span>
+            <span>{Math.abs((currentPlayer?.speed ?? 0) * 3.6).toFixed(0)} km/h</span>
+          </div>
+          {snapshot.status === 'COUNTDOWN' && (
+            <div className="race-countdown">{countdown || 'GO'}</div>
+          )}
+        </div>
+
+        {result && (
+          <div className="race-results">
+            <div>
+              <p className="eyebrow">Clasificacion oficial</p>
+              <h2>Carrera finalizada</h2>
+              <ol>
+                {result.players.map((player) => (
+                  <li key={player.userId}>
+                    <span>#{player.rank}</span>
+                    <strong>{player.username}</strong>
+                    <small>
+                      {player.disconnected
+                        ? 'Desconectado'
+                        : player.finishedAt
+                          ? 'Finalizo'
+                          : `${player.passedCheckpoints}/4 checkpoints`}
+                    </small>
+                  </li>
+                ))}
+              </ol>
+              <button className="primary-button" onClick={onLeave}>
+                Volver a salas
+              </button>
+            </div>
+          </div>
+        )}
+      </section>
+    </KeyboardControls>
+  )
+}
