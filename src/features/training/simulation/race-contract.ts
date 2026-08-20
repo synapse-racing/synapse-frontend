@@ -19,6 +19,7 @@ export interface SimulationState {
 export interface SimulationStep {
   checkpointEntries: number[]
   collision: boolean
+  stalled: boolean
   finished: boolean
 }
 
@@ -111,11 +112,14 @@ export function stepSimulation(
   state.elapsedSteps += 1
   state.stationarySteps = Math.abs(state.speed) < 0.35 ? state.stationarySteps + 1 : 0
   const elapsed = state.elapsedSteps * simulationStepSeconds
+  const stalled = state.stationarySteps * simulationStepSeconds >= 3
   return {
     checkpointEntries,
     collision,
+    stalled,
     finished:
       collision ||
+      stalled ||
       state.laps >= 1 ||
       elapsed >= simulationMaxSeconds,
   }

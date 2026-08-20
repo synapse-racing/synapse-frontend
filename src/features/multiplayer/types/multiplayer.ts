@@ -34,6 +34,7 @@ export interface RacePlayerState {
   finishedAt: number | null
   disconnected: boolean
   eliminated: boolean
+  eliminationReason: 'COLLISION' | 'STALLED' | null
   rank: number
 }
 
