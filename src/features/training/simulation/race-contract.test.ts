@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest'
+import { generateTrack, prototypeTrack } from '../domain/track.ts'
 import {
   createSimulationState,
+  isDrivable,
   senseSimulation,
   stepSimulation,
 } from './race-contract.ts'
@@ -20,7 +22,9 @@ describe('race simulation contract', () => {
   })
 
   it('keeps left and right sensors in the training angle order', () => {
-    const state = createSimulationState(-11, 10, 0)
+    const state = createSimulationState()
+    state.x = -11
+    state.z = 10
     const sensors = senseSimulation(state)
 
     expect(sensors[0]).not.toBe(sensors[4])
@@ -41,12 +45,32 @@ describe('race simulation contract', () => {
   })
 
   it('terminates the agent on its first wall collision', () => {
-    const state = createSimulationState(-10, -23.34, 0)
+    const state = createSimulationState()
+    if (prototypeTrack.geometry.kind !== 'rectangular-ring') {
+      throw new Error('Expected the prototype rectangular track')
+    }
+    state.x = -10
+    state.z = -prototypeTrack.geometry.outerZ + 0.01
+    const initialZ = state.z
     const result = stepSimulation(state, 0, 1)
 
     expect(result).toMatchObject({ collision: true, finished: true })
     expect(state.collided).toBe(true)
-    expect(state.z).toBe(-23.34)
+    expect(state.z).toBe(initialZ)
+  })
+
+  it('generates deterministic but varied drivable tracks', () => {
+    const first = generateTrack({ version: 'curved-loop-v1', seed: 123 })
+    const repeated = generateTrack({ version: 'curved-loop-v1', seed: 123 })
+    const different = generateTrack({ version: 'curved-loop-v1', seed: 124 })
+
+    expect(repeated).toEqual(first)
+    expect(different.geometry).not.toEqual(first.geometry)
+    expect(first.geometry.kind).toBe('centerline-loop')
+    expect(first.boundaries).toHaveLength(144)
+    expect(
+      isDrivable(first.spawnPosition[0], first.spawnPosition[2], first),
+    ).toBe(true)
   })
 
   it('terminates an agent after three seconds without moving', () => {

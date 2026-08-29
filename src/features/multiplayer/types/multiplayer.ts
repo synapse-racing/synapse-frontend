@@ -1,3 +1,5 @@
+import type { TrackRecipe } from '../../training/domain/track.ts'
+
 export type RoomStatus = 'LOBBY' | 'COUNTDOWN' | 'RACING' | 'FINISHED'
 
 export interface RoomPlayer {
@@ -12,6 +14,7 @@ export interface RoomState {
   hostUserId: string
   status: RoomStatus
   maxPlayers: number
+  track: TrackRecipe | null
   players: RoomPlayer[]
 }
 

@@ -1,6 +1,7 @@
 import { apiRequest } from '../../../shared/api/http.ts'
 import type { NeatConfig } from '../neat/config.ts'
 import type { Genome } from '../neat/genes.ts'
+import type { TrackRecipe } from '../domain/track.ts'
 import type {
   GenerationMetrics,
   NeatPopulationSnapshot,
@@ -71,6 +72,18 @@ export function updateTrainingStatus(
     method: 'PATCH',
     token,
     body: JSON.stringify({ status }),
+  })
+}
+
+export function updateTrainingTrack(
+  token: string,
+  id: string,
+  track: TrackRecipe,
+) {
+  return apiRequest<TrainingRun>(`/training-runs/${id}/track`, {
+    method: 'PATCH',
+    token,
+    body: JSON.stringify({ track }),
   })
 }
 

@@ -4,6 +4,7 @@ import {
   Suspense,
   useEffect,
   useEffectEvent,
+  useMemo,
   useRef,
   useState,
 } from 'react'
@@ -30,7 +31,7 @@ import {
   initialTrackProgress,
   type TrackProgress,
 } from '../domain/progress.ts'
-import { prototypeTrack } from '../domain/track.ts'
+import { generateTrack } from '../domain/track.ts'
 import type { Genome } from '../neat/genes.ts'
 import {
   NeatPopulation,
@@ -92,6 +93,10 @@ export function NeatTrainingPage() {
 
   const running = status === 'running'
   const generationKey = `${runId}-${engine.generation}`
+  const activeTrack = useMemo(
+    () => generateTrack(engine.config.track),
+    [engine.config.track],
+  )
 
   async function withFreshAccess<T>(operation: (token: string) => Promise<T>) {
     if (!auth.accessToken) throw new Error('Authentication required')
@@ -125,15 +130,17 @@ export function NeatTrainingPage() {
     generationStartedAt.current = performance.now()
   }
 
-  async function createRun(name: string) {
+  async function createRun(name: string, seed: number) {
     setSelectorBusy(true)
     setSelectorError(null)
     try {
-      const nextEngine = new NeatPopulation(trainingSeed)
+      const nextEngine = new NeatPopulation(seed, {
+        track: { version: 'curved-loop-v1', seed },
+      })
       const run = await withFreshAccess((token) =>
         trainingApi.createTrainingRun(token, {
           name,
-          seed: trainingSeed,
+          seed,
           config: nextEngine.config,
         }),
       )
@@ -209,7 +216,7 @@ export function NeatTrainingPage() {
     record.progress = advanceTrackProgress(
       record.progress,
       index,
-      prototypeTrack.checkpoints.length,
+      activeTrack.checkpoints.length,
     )
   }
 
@@ -226,6 +233,46 @@ export function NeatTrainingPage() {
 
   function resetTraining() {
     if (selectedRun) void loadRun(selectedRun)
+  }
+
+  async function regenerateTrack() {
+    if (!selectedRun || status === 'evolving') return
+    const values = new Uint32Array(1)
+    crypto.getRandomValues(values)
+    const currentSeed = engine.config.track.seed
+    const nextSeed =
+      (values[0] & 0x7fffffff) === currentSeed
+        ? (currentSeed + 1) % 2_147_483_648
+        : values[0] & 0x7fffffff
+    const track = { version: 'curved-loop-v1' as const, seed: nextSeed }
+
+    setStatus('paused')
+    setPersistenceStatus('saving')
+    try {
+      const updated = await withFreshAccess((token) =>
+        trainingApi.updateTrainingTrack(token, selectedRun.id, track),
+      )
+      engine.config.track = track
+      setSelectedRun(updated)
+      setGenomes([...engine.genomes])
+      setAlive(engine.config.populationSize)
+      setCurrentBest(0)
+      setMetrics({
+        generation: Math.max(0, engine.generation - 1),
+        bestFitness: 0,
+        averageFitness: 0,
+        speciesCount: engine.currentSpecies().length,
+      })
+      setRunId((value) => value + 1)
+      recordsRef.current = createEvaluationRecords(engine.genomes)
+      fitnessRef.current = new Map()
+      queryClient.setQueryData<TrainingRun[]>(['training-runs'], (current) =>
+        current?.map((item) => (item.id === updated.id ? updated : item)),
+      )
+      setPersistenceStatus('saved')
+    } catch {
+      setPersistenceStatus('error')
+    }
   }
 
   useEffect(() => {
@@ -315,7 +362,7 @@ export function NeatTrainingPage() {
             onAgentFinish={handleAgentFinish}
             onCheckpoint={handleCheckpoint}
             running={running}
-            track={prototypeTrack}
+            track={activeTrack}
           />
         </Suspense>
       </Canvas>
@@ -326,12 +373,14 @@ export function NeatTrainingPage() {
           generation={engine.generation}
           metrics={metrics}
           onPauseToggle={togglePause}
+          onRegenerateTrack={() => void regenerateTrack()}
           onReset={resetTraining}
           onSelectRun={selectAnotherRun}
           onStart={startTraining}
           persistenceStatus={persistenceStatus}
           populationSize={engine.config.populationSize}
           seed={engine.seed}
+          trackSeed={engine.config.track.seed}
           status={status}
           trainingName={selectedRun.name}
         />

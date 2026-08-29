@@ -32,11 +32,7 @@ export function NeatVehicle({
 }: NeatVehicleProps) {
   const meshRef = useRef<Mesh>(null)
   const state = useRef(
-    createSimulationState(
-      track.spawnPosition[0],
-      track.spawnPosition[2],
-      track.spawnYaw,
-    ),
+    createSimulationState(track),
   )
   const accumulator = useRef(0)
   const finished = useRef(false)
@@ -47,10 +43,10 @@ export function NeatVehicle({
     while (accumulator.current >= simulationStepSeconds && !finished.current) {
       const simulation = state.current
       const [steering, throttle] = evaluateGenome(genome, [
-        ...senseSimulation(simulation),
+        ...senseSimulation(simulation, track),
         Math.min(1, Math.abs(simulation.speed) / 13),
       ])
-      const result = stepSimulation(simulation, steering, throttle)
+      const result = stepSimulation(simulation, steering, throttle, track)
       result.checkpointEntries.forEach((checkpoint) =>
         onCheckpoint(checkpoint, `neat-car:${genome.id}`),
       )

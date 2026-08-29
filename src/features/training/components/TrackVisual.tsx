@@ -6,6 +6,7 @@ interface TrackVisualProps {
 
 export function TrackVisual({ definition }: TrackVisualProps) {
   const [groundWidth, groundLength] = definition.groundSize
+  const gridSize = Math.ceil(Math.max(groundWidth, groundLength) / 4) * 4
 
   return (
     <group>
@@ -18,6 +19,7 @@ export function TrackVisual({ definition }: TrackVisualProps) {
         <mesh
           key={wall.id}
           position={wall.position}
+          rotation={[0, wall.rotationY, 0]}
           castShadow
           receiveShadow
         >
@@ -39,7 +41,7 @@ export function TrackVisual({ definition }: TrackVisualProps) {
             0.012,
             checkpoint.position[2],
           ]}
-          rotation={[-Math.PI / 2, 0, 0]}
+          rotation={[-Math.PI / 2, 0, -checkpoint.rotationY]}
         >
           <planeGeometry args={[checkpoint.size[0], checkpoint.size[2]]} />
           <meshBasicMaterial
@@ -51,7 +53,7 @@ export function TrackVisual({ definition }: TrackVisualProps) {
       ))}
 
       <gridHelper
-        args={[48, 48, '#25333c', '#1d2931']}
+        args={[gridSize, gridSize, '#25333c', '#1d2931']}
         position={[0, 0.015, 0]}
       />
     </group>

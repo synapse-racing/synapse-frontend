@@ -10,12 +10,14 @@ interface NeatTrainingHudProps {
   generation: number
   metrics: GenerationMetrics
   onPauseToggle: () => void
+  onRegenerateTrack: () => void
   onReset: () => void
   onSelectRun: () => void
   onStart: () => void
   persistenceStatus: PersistenceStatus
   populationSize: number
   seed: number
+  trackSeed: number
   status: TrainingStatus
   trainingName: string
 }
@@ -33,12 +35,14 @@ export function NeatTrainingHud({
   generation,
   metrics,
   onPauseToggle,
+  onRegenerateTrack,
   onReset,
   onSelectRun,
   onStart,
   persistenceStatus,
   populationSize,
   seed,
+  trackSeed,
   status,
   trainingName,
 }: NeatTrainingHudProps) {
@@ -66,12 +70,18 @@ export function NeatTrainingHud({
             </button>
           )}
           <button onClick={onReset}>Recargar</button>
+          <button
+            onClick={onRegenerateTrack}
+            disabled={status === 'evolving' || persistenceStatus === 'saving'}
+          >
+            Regenerar pista
+          </button>
         </div>
       </header>
 
       <section className="neat-hud__summary">
         <p className="eyebrow">
-          NEAT // {trainingName} // seed {seed}
+          NEAT // {trainingName} // red {seed} // pista {trackSeed}
         </p>
         <h1>Generacion {generation + 1}</h1>
         <p>

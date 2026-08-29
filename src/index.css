@@ -484,7 +484,9 @@ a {
 }
 
 .neat-hud__actions {
+  flex-wrap: wrap;
   justify-self: end;
+  justify-content: flex-end;
 }
 
 .neat-hud__actions button {
@@ -622,7 +624,7 @@ a {
 }
 
 .run-selector__panel {
-  width: min(100%, 44rem);
+  width: min(100%, 64rem);
   border: 1px solid rgba(114, 225, 181, 0.25);
   border-radius: 1rem;
   padding: clamp(1.4rem, 4vw, 2.5rem);
@@ -649,6 +651,81 @@ a {
   grid-template-columns: 1fr auto;
   gap: 0.65rem;
   margin-bottom: 1.5rem;
+}
+
+.run-setup {
+  grid-template-columns: minmax(0, 1fr) minmax(16rem, 0.8fr);
+  align-items: end;
+  border-block: 1px solid rgba(114, 225, 181, 0.14);
+  padding-block: 1.25rem;
+}
+
+.run-setup > label {
+  display: grid;
+  gap: 0.45rem;
+  color: #9aabb5;
+  font-family: ui-monospace, monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.track-preset {
+  display: grid;
+  gap: 0.2rem;
+  min-height: 5.25rem;
+  border: 1px solid #34584d;
+  border-radius: 0.7rem;
+  padding: 0.85rem;
+  background:
+    linear-gradient(135deg, rgba(114, 225, 181, 0.13), transparent),
+    #0c171c;
+}
+
+.track-preset span,
+.track-preset small {
+  color: #80949e;
+  font-size: 0.72rem;
+}
+
+.track-preset strong {
+  color: #72e1b5;
+  font-size: 1.15rem;
+}
+
+.seed-control {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.5rem;
+}
+
+.seed-control button {
+  color: #d7e1e6;
+  background: #203139;
+}
+
+.neat-advanced {
+  align-self: stretch;
+  border: 1px solid #2b3d46;
+  border-radius: 0.6rem;
+  padding: 0.75rem;
+  color: #84969f;
+  background: rgba(7, 13, 17, 0.55);
+}
+
+.neat-advanced summary {
+  cursor: pointer;
+  color: #becbd1;
+}
+
+.neat-advanced p {
+  margin: 0.65rem 0 0;
+  font-family: ui-monospace, monospace;
+  font-size: 0.75rem;
+}
+
+.run-setup > .primary-button {
+  min-height: 3.1rem;
 }
 
 .run-selector__create input {
@@ -1148,6 +1225,13 @@ a {
 }
 
 @media (max-width: 760px) {
+  .run-setup {
+    grid-template-columns: 1fr;
+  }
+
+  .seed-control {
+    grid-template-columns: 1fr;
+  }
   .auth-shell {
     grid-template-columns: 1fr;
   }
