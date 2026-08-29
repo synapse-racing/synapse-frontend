@@ -19,7 +19,7 @@ export function DashboardPage() {
         <p>La base esta lista. Los modos se habilitaran fase por fase.</p>
 
         <div className="mode-grid">
-          <Link className="mode-card mode-card--active" to="/training/neat">
+          <Link className="mode-card mode-card--active" to="/training">
             <span>NEAT disponible</span>
             <h2>Entrenar</h2>
             <p>Evoluciona una poblacion de autos dentro del laboratorio 3D.</p>

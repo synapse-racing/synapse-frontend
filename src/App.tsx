@@ -7,12 +7,6 @@ import { PublicOnlyRoute } from './features/auth/components/PublicOnlyRoute.tsx'
 import { DashboardPage } from './pages/DashboardPage.tsx'
 import { NotFoundPage } from './pages/NotFoundPage.tsx'
 
-const TrainingPage = lazy(() =>
-  import('./features/training/pages/TrainingPage.tsx').then((module) => ({
-    default: module.TrainingPage,
-  })),
-)
-
 const NeatTrainingPage = lazy(() =>
   import('./features/training/pages/NeatTrainingPage.tsx').then((module) => ({
     default: module.NeatTrainingPage,
@@ -41,21 +35,6 @@ function App() {
             <Suspense
               fallback={
                 <main className="page">
-                  <p className="eyebrow">Inicializando fisica</p>
-                  <h1>Cargando laboratorio</h1>
-                </main>
-              }
-            >
-              <TrainingPage />
-            </Suspense>
-          }
-        />
-        <Route
-          path="/training/neat"
-          element={
-            <Suspense
-              fallback={
-                <main className="page">
                   <p className="eyebrow">Construyendo poblacion</p>
                   <h1>Cargando NEAT</h1>
                 </main>
@@ -65,6 +44,7 @@ function App() {
             </Suspense>
           }
         />
+        <Route path="/training/neat" element={<Navigate to="/training" replace />} />
         <Route
           path="/multiplayer"
           element={
