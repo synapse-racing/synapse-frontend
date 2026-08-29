@@ -9,6 +9,7 @@ const room: RoomState = {
   hostUserId: 'host',
   status: 'LOBBY',
   maxPlayers: 4,
+  track: { version: 'rectangular-ring-v1', seed: 42_170 },
   players: [
     { userId: 'host', username: 'Host', ready: true, genomeName: 'Host AI' },
     { userId: 'guest', username: 'Guest', ready: false, genomeName: 'Guest AI' },

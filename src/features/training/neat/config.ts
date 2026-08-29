@@ -1,3 +1,5 @@
+import type { TrackRecipe } from '../domain/track.ts'
+
 export interface NeatConfig {
   simulationVersion: 'race-sim-v1'
   populationSize: number
@@ -9,6 +11,7 @@ export interface NeatConfig {
   addConnectionRate: number
   addNodeRate: number
   toggleConnectionRate: number
+  track: TrackRecipe
 }
 
 export const defaultNeatConfig: NeatConfig = {
@@ -22,4 +25,5 @@ export const defaultNeatConfig: NeatConfig = {
   addConnectionRate: 0.08,
   addNodeRate: 0.04,
   toggleConnectionRate: 0.02,
+  track: { version: 'curved-loop-v1', seed: 42_170 },
 }
