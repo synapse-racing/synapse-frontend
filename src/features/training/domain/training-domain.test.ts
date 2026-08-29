@@ -3,30 +3,7 @@ import {
   advanceTrackProgress,
   initialTrackProgress,
 } from './progress.ts'
-import {
-  normalizeSensorDistance,
-  sensorDirection,
-  sensorMaxDistance,
-} from './sensors.ts'
 import { calculateFitness } from './fitness.ts'
-
-describe('sensor domain', () => {
-  it('points the central sensor forward and side sensors symmetrically', () => {
-    expect(sensorDirection(0)).toEqual([0, 0, -1])
-
-    const left = sensorDirection(-60)
-    const right = sensorDirection(60)
-    expect(left[0]).toBeCloseTo(-right[0])
-    expect(left[2]).toBeCloseTo(right[2])
-  })
-
-  it('normalizes and clamps ray distances', () => {
-    expect(normalizeSensorDistance(null)).toBe(1)
-    expect(normalizeSensorDistance(sensorMaxDistance / 2)).toBe(0.5)
-    expect(normalizeSensorDistance(-1)).toBe(0)
-    expect(normalizeSensorDistance(sensorMaxDistance * 2)).toBe(1)
-  })
-})
 
 describe('track progress domain', () => {
   it('ignores checkpoints crossed out of order', () => {

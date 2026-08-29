@@ -51,7 +51,6 @@ export function NeatTrainingHud({
       <header className="neat-hud__topbar">
         <div>
           <Link to="/dashboard">← Dashboard</Link>
-          <Link to="/training">Modo manual</Link>
           <button className="neat-hud__change" onClick={onSelectRun}>
             Cambiar
           </button>
