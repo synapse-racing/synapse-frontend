@@ -379,8 +379,6 @@ export function NeatTrainingPage() {
           onStart={startTraining}
           persistenceStatus={persistenceStatus}
           populationSize={engine.config.populationSize}
-          seed={engine.seed}
-          trackSeed={engine.config.track.seed}
           status={status}
           trainingName={selectedRun.name}
         />

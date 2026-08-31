@@ -120,6 +120,11 @@ export function MultiplayerPage() {
           onSelectGenome={(trainingRunId) =>
             socketRef.current?.emit('player:select-genome', { trainingRunId })
           }
+          onSelectTrack={(seed) =>
+            socketRef.current?.emit('room:select-track', {
+              track: { version: 'curved-loop-v1', seed },
+            })
+          }
           onStart={() => socketRef.current?.emit('race:start')}
           room={room}
           trainingRuns={trainingRuns}

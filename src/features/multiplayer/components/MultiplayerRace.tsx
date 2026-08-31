@@ -1,6 +1,6 @@
 import { OrbitControls } from '@react-three/drei'
 import { Canvas } from '@react-three/fiber'
-import { generateTrack, prototypeTrack } from '../../training/domain/track.ts'
+import { generateTrack } from '../../training/domain/track.ts'
 import { TrackVisual } from '../../training/components/TrackVisual.tsx'
 import type {
   RaceResult,
@@ -28,7 +28,7 @@ export function MultiplayerRace({
     (player) => player.userId === currentUserId,
   )
   const countdown = Math.max(0, Math.ceil((snapshot.startAt - Date.now()) / 1000))
-  const track = generateTrack(room.track ?? prototypeTrack.recipe)
+  const track = generateTrack(room.track)
 
   return (
     <section className="multiplayer-race">

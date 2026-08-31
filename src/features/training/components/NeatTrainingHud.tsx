@@ -16,8 +16,6 @@ interface NeatTrainingHudProps {
   onStart: () => void
   persistenceStatus: PersistenceStatus
   populationSize: number
-  seed: number
-  trackSeed: number
   status: TrainingStatus
   trainingName: string
 }
@@ -41,8 +39,6 @@ export function NeatTrainingHud({
   onStart,
   persistenceStatus,
   populationSize,
-  seed,
-  trackSeed,
   status,
   trainingName,
 }: NeatTrainingHudProps) {
