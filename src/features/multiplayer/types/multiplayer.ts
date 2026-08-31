@@ -14,7 +14,7 @@ export interface RoomState {
   hostUserId: string
   status: RoomStatus
   maxPlayers: number
-  track: TrackRecipe | null
+  track: TrackRecipe
   players: RoomPlayer[]
 }
 
@@ -74,5 +74,6 @@ export interface ClientToServerEvents {
   'room:leave': () => void
   'player:ready': (input: { ready: boolean }) => void
   'player:select-genome': (input: { trainingRunId: string }) => void
+  'room:select-track': (input: { track: TrackRecipe }) => void
   'race:start': () => void
 }

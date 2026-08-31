@@ -814,6 +814,49 @@ a {
   letter-spacing: 0.1em;
 }
 
+.lobby-track {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: end;
+  gap: 1rem;
+  margin-top: 1rem;
+  border: 1px solid #263740;
+  border-radius: 0.55rem;
+  padding: 1rem;
+  background: rgba(13, 23, 29, 0.76);
+}
+
+.lobby-track > div:first-child {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.lobby-track span,
+.lobby-track small {
+  color: #8798a3;
+  font-family: ui-monospace, monospace;
+  font-size: 0.72rem;
+}
+
+.lobby-track__controls {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.lobby-track__controls input,
+.lobby-track__controls button {
+  border: 1px solid #3c505a;
+  border-radius: 0.45rem;
+  padding: 0.65rem 0.75rem;
+  color: #e8eef2;
+  background: #17242b;
+}
+
+.lobby-track__controls input {
+  width: 9rem;
+  background: #0a141a;
+}
+
 .lobby-players {
   display: grid;
   gap: 0.55rem;
@@ -1137,6 +1180,18 @@ a {
   .lobby-code strong {
     grid-row: auto;
     font-size: 2.8rem;
+  }
+
+  .lobby-track {
+    grid-template-columns: 1fr;
+  }
+
+  .lobby-track__controls {
+    flex-wrap: wrap;
+  }
+
+  .lobby-track__controls input {
+    width: 100%;
   }
 
   .lobby-actions {

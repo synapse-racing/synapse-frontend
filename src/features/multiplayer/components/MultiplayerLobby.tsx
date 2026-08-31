@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import type { RoomState } from '../types/multiplayer.ts'
 import type { TrainingRun } from '../../training/api/training.api.ts'
@@ -12,6 +12,7 @@ interface MultiplayerLobbyProps {
   onLeave: () => void
   onReady: (ready: boolean) => void
   onSelectGenome: (trainingRunId: string) => void
+  onSelectTrack: (seed: number) => void
   onStart: () => void
   room: RoomState | null
   trainingRuns: TrainingRun[]
@@ -26,12 +27,19 @@ export function MultiplayerLobby({
   onLeave,
   onReady,
   onSelectGenome,
+  onSelectTrack,
   onStart,
   room,
   trainingRuns,
 }: MultiplayerLobbyProps) {
   const [code, setCode] = useState('')
   const [maxPlayers, setMaxPlayers] = useState(4)
+  const [trackSeed, setTrackSeed] = useState(0)
+  const roomTrackSeed = room?.track.seed
+
+  useEffect(() => {
+    if (roomTrackSeed !== undefined) setTrackSeed(roomTrackSeed)
+  }, [roomTrackSeed])
 
   function join(event: FormEvent) {
     event.preventDefault()
@@ -107,6 +115,44 @@ export function MultiplayerLobby({
           {room.players.length}/{room.maxPlayers} pilotos
         </small>
       </div>
+
+      <section className="lobby-track" aria-label="Pista multijugador">
+        <div>
+          <span>Pista de la sala</span>
+          <strong>Curved Loop #{room.track.seed}</strong>
+          <small>La pista es independiente de los pilotos NEAT seleccionados.</small>
+        </div>
+        {isHost ? (
+          <div className="lobby-track__controls">
+            <input
+              aria-label="Semilla de pista multijugador"
+              min={0}
+              max={2_147_483_647}
+              onChange={(event) => setTrackSeed(Number(event.target.value))}
+              type="number"
+              value={trackSeed}
+            />
+            <button
+              disabled={busy || !Number.isSafeInteger(trackSeed)}
+              onClick={() => onSelectTrack(trackSeed)}
+            >
+              Aplicar semilla
+            </button>
+            <button
+              disabled={busy}
+              onClick={() => {
+                const seed = Math.floor(Math.random() * 2_147_483_648)
+                setTrackSeed(seed)
+                onSelectTrack(seed)
+              }}
+            >
+              Generar otra
+            </button>
+          </div>
+        ) : (
+          <small>Solo el host puede cambiar la pista.</small>
+        )}
+      </section>
 
       <div className="lobby-players">
         {room.players.map((player, index) => (

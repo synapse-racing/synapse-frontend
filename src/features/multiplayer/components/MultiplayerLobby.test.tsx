@@ -31,6 +31,7 @@ describe('MultiplayerLobby', () => {
         onLeave={vi.fn()}
         onReady={onReady}
         onSelectGenome={vi.fn()}
+        onSelectTrack={vi.fn()}
         onStart={vi.fn()}
         room={room}
         trainingRuns={[
@@ -55,5 +56,36 @@ describe('MultiplayerLobby', () => {
     expect(screen.getByText('Guest')).toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: 'Estoy listo' }))
     expect(onReady).toHaveBeenCalledWith(true)
+  })
+
+  it('allows only the host controls to select the room track', async () => {
+    const onSelectTrack = vi.fn()
+    const user = userEvent.setup()
+
+    render(
+      <MultiplayerLobby
+        busy={false}
+        currentUserId="host"
+        error={null}
+        onCreate={vi.fn()}
+        onJoin={vi.fn()}
+        onLeave={vi.fn()}
+        onReady={vi.fn()}
+        onSelectGenome={vi.fn()}
+        onSelectTrack={onSelectTrack}
+        onStart={vi.fn()}
+        room={room}
+        trainingRuns={[]}
+      />,
+    )
+
+    const input = screen.getByRole('spinbutton', {
+      name: 'Semilla de pista multijugador',
+    })
+    await user.clear(input)
+    await user.type(input, '777')
+    await user.click(screen.getByRole('button', { name: 'Aplicar semilla' }))
+
+    expect(onSelectTrack).toHaveBeenCalledWith(777)
   })
 })

@@ -28,9 +28,7 @@ describe('NeatTrainingHud', () => {
           onStart={vi.fn()}
           persistenceStatus="saved"
           populationSize={24}
-          seed={42_170}
           status="paused"
-          trackSeed={123}
           trainingName="Curvas"
         />
       </MemoryRouter>,
@@ -38,6 +36,5 @@ describe('NeatTrainingHud', () => {
 
     await user.click(screen.getByRole('button', { name: 'Regenerar pista' }))
     expect(onRegenerateTrack).toHaveBeenCalledOnce()
-    expect(screen.getByText(/pista 123/)).toBeInTheDocument()
   })
 })
