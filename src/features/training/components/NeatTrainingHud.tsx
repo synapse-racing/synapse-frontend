@@ -80,13 +80,9 @@ export function NeatTrainingHud({
 
       <section className="neat-hud__summary">
         <p className="eyebrow">
-          NEAT // {trainingName} // red {seed} // pista {trackSeed}
+          {trainingName}
         </p>
-        <h1>Generacion {generation + 1}</h1>
-        <p>
-          Cinco raycasts y velocidad alimentan cada red. El auto resaltado es
-          el campeon heredado de la generacion anterior.
-        </p>
+        <h2>Generacion {generation + 1}</h2>
       </section>
 
       <section className="neat-metrics" aria-label="Metricas NEAT">
