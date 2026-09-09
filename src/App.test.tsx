@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import App from './App.tsx'
 import { AppProviders } from './app/providers.tsx'
+vi.mock('./shared/game/GarageBackdrop.tsx', () => ({ GarageBackdrop: () => null }))
 
 const authenticatedUser = {
   id: '5d9e1ffc-c86a-49af-92a6-e78dbb2fb92a',
@@ -27,7 +28,7 @@ describe('authentication navigation', () => {
     vi.restoreAllMocks()
   })
 
-  it('redirects a guest to login', async () => {
+  it('shows the title and opens login when a guest presses Enter', async () => {
     vi.stubGlobal(
       'fetch',
       vi.fn(() => jsonResponse({ message: 'Invalid session' }, 401)),
@@ -39,12 +40,16 @@ describe('authentication navigation', () => {
       </AppProviders>,
     )
 
+    const enter = await screen.findByRole('button', { name: /Presiona Enter/ })
+    expect(enter).toBeEnabled()
+    await userEvent.keyboard('{Enter}')
     expect(
       await screen.findByRole('heading', { name: 'Iniciar sesion' }),
     ).toBeInTheDocument()
   })
 
   it('opens the dashboard after a valid login', async () => {
+    window.history.replaceState({}, '', '/login')
     const fetchMock = vi.fn((input: RequestInfo | URL) => {
       const url = input.toString()
       if (url.endsWith('/auth/refresh')) {
@@ -68,7 +73,7 @@ describe('authentication navigation', () => {
 
     expect(
       await screen.findByRole('heading', {
-        name: 'Elige tu siguiente carrera.',
+        name: /A LA\s*PISTA/,
       }),
     ).toBeInTheDocument()
     expect(fetchMock).toHaveBeenCalledTimes(2)
