@@ -1,4 +1,4 @@
-import { Canvas } from '@react-three/fiber'
+import { SceneCanvas } from '../../../shared/three/SceneCanvas.tsx'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   Suspense,
@@ -72,6 +72,8 @@ export function NeatTrainingPage() {
   const [alive, setAlive] = useState(engine.config.populationSize)
   const [metrics, setMetrics] = useState(() => createInitialMetrics(engine))
   const [currentBest, setCurrentBest] = useState(0)
+  const [cameraMode, setCameraMode] = useState<'overview' | 'follow'>('overview')
+  const [selectedCar, setSelectedCar] = useState(0)
   const [runId, setRunId] = useState(0)
   const [selectedRun, setSelectedRun] = useState<TrainingRun | null>(null)
   const [selectorBusy, setSelectorBusy] = useState(false)
@@ -350,22 +352,21 @@ export function NeatTrainingPage() {
 
   return (
     <main className="training-lab neat-lab">
-      <Canvas
-        shadows
-        camera={{ position: [0, 38, 34], fov: 52, near: 0.1, far: 140 }}
-        dpr={[1, 1.35]}
-      >
+      <SceneCanvas>
         <Suspense fallback={null}>
           <NeatTrainingScene
+            key={generationKey}
             generationKey={generationKey}
             genomes={genomes}
             onAgentFinish={handleAgentFinish}
             onCheckpoint={handleCheckpoint}
             running={running}
             track={activeTrack}
+            cameraMode={cameraMode}
+            selectedGenomeId={genomes[selectedCar]?.id ?? genomes[0].id}
           />
         </Suspense>
-      </Canvas>
+      </SceneCanvas>
       {selectedRun ? (
         <NeatTrainingHud
           alive={alive}
@@ -381,6 +382,11 @@ export function NeatTrainingPage() {
           populationSize={engine.config.populationSize}
           status={status}
           trainingName={selectedRun.name}
+          cameraMode={cameraMode}
+          onCameraModeChange={setCameraMode}
+          selectedCar={selectedCar}
+          onSelectedCarChange={setSelectedCar}
+          trackSeed={activeTrack.recipe.seed}
         />
       ) : (
         <TrainingRunSelector

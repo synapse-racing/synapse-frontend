@@ -4,6 +4,7 @@ import { describe, expect, it, vi } from 'vitest'
 import type { TrainingRun } from '../api/training.api.ts'
 import { defaultNeatConfig } from '../neat/config.ts'
 import { TrainingRunSelector } from './TrainingRunSelector.tsx'
+import { MemoryRouter } from 'react-router-dom'
 
 const savedRun: TrainingRun = {
   id: '132f5af1-b50e-43ae-bab7-aee813b6a948',
@@ -25,14 +26,14 @@ describe('TrainingRunSelector', () => {
     const user = userEvent.setup()
 
     render(
-      <TrainingRunSelector
+      <MemoryRouter><TrainingRunSelector
         busy={false}
         error={null}
         onCreate={vi.fn().mockResolvedValue(undefined)}
         onDelete={vi.fn().mockResolvedValue(undefined)}
         onLoad={onLoad}
         runs={[savedRun]}
-      />,
+      /></MemoryRouter>,
     )
 
     await user.click(

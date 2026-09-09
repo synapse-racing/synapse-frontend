@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
 import type { TrainingRun } from '../api/training.api.ts'
+import { Link } from 'react-router-dom'
+import { TrackMap } from '../../../shared/game/TrackMap.tsx'
 
 interface TrainingRunSelectorProps {
   busy: boolean
@@ -33,7 +35,7 @@ export function TrainingRunSelector({
   return (
     <section className="run-selector" aria-label="Entrenamientos guardados">
       <div className="run-selector__panel">
-        <p className="eyebrow">Race Lab // Garaje</p>
+        <div className="garage-heading"><p className="eyebrow">01 / Campo de pruebas</p><Link to="/dashboard">← Paddock</Link></div>
         <h1>Prepara tu escuderia.</h1>
         <p className="run-selector__lead">
           Genera un circuito reproducible, lanza una nueva temporada o recupera
@@ -52,8 +54,9 @@ export function TrainingRunSelector({
             />
           </label>
           <div className="track-preset track-preset--selected">
-            <span>Circuito procedural</span>
-            <strong>Curved Loop</strong>
+            <span>Desierto / Circuito procedural</span>
+            <strong>Test Field</strong>
+            <TrackMap recipe={{ version: 'curved-loop-v1', seed: Number.isSafeInteger(seed) ? seed : 0 }} />
             <small>Curvas variables · 4 sectores · reproducible por semilla</small>
           </div>
           <label>
@@ -77,7 +80,7 @@ export function TrainingRunSelector({
           </label>
           <details className="neat-advanced">
             <summary>Telemetria avanzada</summary>
-            <p>24 pilotos · 5 raycasts · red 6 → 2 · simulacion race-sim-v1</p>
+            <p>24 pilotos · 5 sensores · 6 entradas y 2 salidas. Cada semilla reproduce el mismo trazado.</p>
           </details>
           <button className="primary-button" disabled={busy || name.trim().length < 3}>
             Crear temporada

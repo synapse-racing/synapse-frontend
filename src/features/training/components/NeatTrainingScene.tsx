@@ -1,9 +1,10 @@
-import { OrbitControls } from '@react-three/drei'
+import { useRef } from 'react'
 import type { AgentRuntime } from '../domain/fitness.ts'
 import type { TrackDefinition } from '../domain/track.ts'
 import type { Genome } from '../neat/genes.ts'
 import { NeatVehicle } from './NeatVehicle.tsx'
-import { TrackVisual } from './TrackVisual.tsx'
+import { TrackEnvironment } from '../../../shared/three/TrackEnvironment.tsx'
+import { RaceCamera, type CarPose } from '../../../shared/three/RaceCamera.tsx'
 
 interface NeatTrainingSceneProps {
   generationKey: string
@@ -12,6 +13,8 @@ interface NeatTrainingSceneProps {
   onCheckpoint: (index: number, rigidBodyName: string) => void
   running: boolean
   track: TrackDefinition
+  cameraMode: 'overview' | 'follow'
+  selectedGenomeId: string
 }
 
 export function NeatTrainingScene({
@@ -21,15 +24,13 @@ export function NeatTrainingScene({
   onCheckpoint,
   running,
   track,
+  cameraMode,
+  selectedGenomeId,
 }: NeatTrainingSceneProps) {
+  const poses = useRef(new Map<string, CarPose>())
   return (
     <>
-      <color attach="background" args={['#070d12']} />
-      <fog attach="fog" args={['#070d12', 38, 85]} />
-      <ambientLight intensity={0.75} />
-      <hemisphereLight args={['#b8d9eb', '#111820', 0.8]} />
-      <directionalLight position={[12, 24, 8]} intensity={2} castShadow />
-      <TrackVisual definition={track} />
+      <TrackEnvironment track={track} theme="desert" />
       {genomes.map((genome, index) => (
         <NeatVehicle
           key={`${generationKey}-${genome.id}`}
@@ -39,15 +40,11 @@ export function NeatTrainingScene({
           onCheckpoint={onCheckpoint}
           running={running}
           track={track}
+          selected={genome.id === selectedGenomeId}
+          onPose={(id, pose) => poses.current.set(id, pose)}
         />
       ))}
-      <OrbitControls
-        makeDefault
-        target={[0, 0, 0]}
-        minDistance={24}
-        maxDistance={65}
-        maxPolarAngle={Math.PI / 2.15}
-      />
+      <RaceCamera mode={cameraMode} getTarget={() => poses.current.get(selectedGenomeId) ?? { x: track.spawnPosition[0], z: track.spawnPosition[2], yaw: track.spawnYaw }} />
     </>
   )
 }
