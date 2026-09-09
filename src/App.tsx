@@ -6,6 +6,8 @@ import { ProtectedRoute } from './features/auth/components/ProtectedRoute.tsx'
 import { PublicOnlyRoute } from './features/auth/components/PublicOnlyRoute.tsx'
 import { DashboardPage } from './pages/DashboardPage.tsx'
 import { NotFoundPage } from './pages/NotFoundPage.tsx'
+import { TitlePage } from './pages/TitlePage.tsx'
+import { GamePreferences } from './shared/game/preferences.tsx'
 
 const NeatTrainingPage = lazy(() =>
   import('./features/training/pages/NeatTrainingPage.tsx').then((module) => ({
@@ -21,13 +23,13 @@ const MultiplayerPage = lazy(() =>
 
 function App() {
   return (
-    <Routes>
+    <GamePreferences><Routes>
+      <Route path="/" element={<TitlePage />} />
       <Route element={<PublicOnlyRoute />}>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
       </Route>
       <Route element={<ProtectedRoute />}>
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route
           path="/training"
@@ -35,8 +37,8 @@ function App() {
             <Suspense
               fallback={
                 <main className="page">
-                  <p className="eyebrow">Construyendo poblacion</p>
-                  <h1>Cargando NEAT</h1>
+                  <p className="eyebrow">Campo de pruebas</p>
+                  <h1>Preparando la pista</h1>
                 </main>
               }
             >
@@ -51,7 +53,7 @@ function App() {
             <Suspense
               fallback={
                 <main className="page">
-                  <p className="eyebrow">Abriendo socket</p>
+                  <p className="eyebrow">Torneo / Multijugador</p>
                   <h1>Conectando pilotos</h1>
                 </main>
               }
@@ -62,7 +64,7 @@ function App() {
         />
       </Route>
       <Route path="*" element={<NotFoundPage />} />
-    </Routes>
+    </Routes></GamePreferences>
   )
 }
 
