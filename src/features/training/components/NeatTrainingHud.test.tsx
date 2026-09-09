@@ -7,6 +7,8 @@ import { NeatTrainingHud } from './NeatTrainingHud.tsx'
 describe('NeatTrainingHud', () => {
   it('regenerates the track from an active training session', async () => {
     const onRegenerateTrack = vi.fn()
+    const onPauseToggle = vi.fn()
+    const onCameraModeChange = vi.fn()
     const user = userEvent.setup()
 
     render(
@@ -21,7 +23,8 @@ describe('NeatTrainingHud', () => {
             averageFitness: 5,
             speciesCount: 2,
           }}
-          onPauseToggle={vi.fn()}
+          onPauseToggle={onPauseToggle}
+          onCameraModeChange={onCameraModeChange}
           onRegenerateTrack={onRegenerateTrack}
           onReset={vi.fn()}
           onSelectRun={vi.fn()}
@@ -36,5 +39,13 @@ describe('NeatTrainingHud', () => {
 
     await user.click(screen.getByRole('button', { name: 'Regenerar pista' }))
     expect(onRegenerateTrack).toHaveBeenCalledOnce()
+    await user.keyboard('{Escape}')
+    expect(onPauseToggle).toHaveBeenCalledOnce()
+    await user.click(screen.getByRole('button', { name: 'Seguir auto' }))
+    expect(onCameraModeChange).toHaveBeenCalledWith('follow')
+    await user.click(screen.getByRole('button', { name: 'Telemetría' }))
+    expect(
+      screen.getByRole('region', { name: 'Telemetría NEAT' }),
+    ).toHaveTextContent('Promedio')
   })
 })

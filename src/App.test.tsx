@@ -3,7 +3,9 @@ import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import App from './App.tsx'
 import { AppProviders } from './app/providers.tsx'
-vi.mock('./shared/game/GarageBackdrop.tsx', () => ({ GarageBackdrop: () => null }))
+vi.mock('./shared/game/GarageBackdrop.tsx', () => ({
+  GarageBackdrop: () => null,
+}))
 
 const authenticatedUser = {
   id: '5d9e1ffc-c86a-49af-92a6-e78dbb2fb92a',
@@ -56,7 +58,10 @@ describe('authentication navigation', () => {
         return jsonResponse({ message: 'Invalid session' }, 401)
       }
 
-      return jsonResponse({ accessToken: 'access-token', user: authenticatedUser })
+      return jsonResponse({
+        accessToken: 'access-token',
+        user: authenticatedUser,
+      })
     })
     vi.stubGlobal('fetch', fetchMock)
     const user = userEvent.setup()
@@ -67,7 +72,10 @@ describe('authentication navigation', () => {
       </AppProviders>,
     )
 
-    await user.type(await screen.findByLabelText('Correo'), 'driver@example.com')
+    await user.type(
+      await screen.findByLabelText('Correo'),
+      'driver@example.com',
+    )
     await user.type(screen.getByLabelText('Contrasena'), 'secure-pass-123')
     await user.click(screen.getByRole('button', { name: 'Ingresar' }))
 
@@ -77,5 +85,33 @@ describe('authentication navigation', () => {
       }),
     ).toBeInTheDocument()
     expect(fetchMock).toHaveBeenCalledTimes(2)
+  })
+
+  it('continues to the paddock when the session is restored', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(() =>
+        jsonResponse({ accessToken: 'access-token', user: authenticatedUser }),
+      ),
+    )
+    const user = userEvent.setup()
+    render(
+      <AppProviders>
+        <App />
+      </AppProviders>,
+    )
+    await user.click(
+      await screen.findByRole('button', { name: /Presiona Enter/ }),
+    )
+    expect(
+      await screen.findByRole('navigation', { name: 'Modos de juego' }),
+    ).toBeInTheDocument()
+    expect(
+      screen.queryByRole('heading', { name: 'Iniciar sesion' }),
+    ).not.toBeInTheDocument()
+    const training = screen.getByRole('link', { name: /ENTRENAMIENTO/ })
+    training.focus()
+    await user.keyboard('{ArrowDown}')
+    expect(screen.getByRole('link', { name: /MULTIJUGADOR/ })).toHaveFocus()
   })
 })

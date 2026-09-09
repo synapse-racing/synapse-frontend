@@ -44,7 +44,16 @@ export function NeatTrainingScene({
           onPose={(id, pose) => poses.current.set(id, pose)}
         />
       ))}
-      <RaceCamera mode={cameraMode} getTarget={() => poses.current.get(selectedGenomeId) ?? { x: track.spawnPosition[0], z: track.spawnPosition[2], yaw: track.spawnYaw }} />
+      <RaceCamera
+        mode={cameraMode}
+        getTarget={() =>
+          poses.current.get(selectedGenomeId) ?? {
+            x: track.spawnPosition[0],
+            z: track.spawnPosition[2],
+            yaw: track.spawnYaw,
+          }
+        }
+      />
     </>
   )
 }
