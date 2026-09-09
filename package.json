@@ -9,6 +9,7 @@
     "build": "tsc -b && vite build",
     "lint": "oxlint",
     "test": "vitest run",
+    "test:race-parity": "node scripts/check-race-parity.cjs",
     "test:watch": "vitest",
     "preview": "vite preview"
   },
