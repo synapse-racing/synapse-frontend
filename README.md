@@ -48,9 +48,7 @@ El plan del producto esta en [`PROJECT_PLAN.md`](./PROJECT_PLAN.md) y el avance 
 
 La aplicacion dispone actualmente de registro, login, recuperacion de sesion, logout y dashboard protegido. El access token se conserva solo en memoria y el refresh token se administra mediante una cookie `HttpOnly`.
 
-El laboratorio `/training` incluye un circuito 3D, conduccion manual con WASD o flechas, fisica Rapier, camara de seguimiento, cinco raycasts, checkpoints y telemetria. Pulsa `R` para reiniciar el prototipo.
-
-El entrenamiento `/training/neat` ejecuta una poblacion de 24 autos con redes feed-forward, innovaciones, mutaciones estructurales, crossover, especiacion y elitismo. El panel permite iniciar, pausar y reiniciar de forma reproducible con la misma semilla.
+El entrenamiento `/training` ejecuta una poblacion de 24 autos con redes feed-forward, innovaciones, mutaciones estructurales, crossover, especiacion y elitismo. El panel permite iniciar, pausar, regenerar el circuito y reiniciar de forma reproducible con la misma semilla.
 
 Los entrenamientos NEAT se guardan en PostgreSQL al terminar cada generacion. El selector permite crear, cargar y eliminar ejecuciones; los snapshots versionados restauran poblacion, PRNG e innovaciones para continuar de forma determinista.
 
