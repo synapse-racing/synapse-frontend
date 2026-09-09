@@ -35,14 +35,20 @@ export function TrainingRunSelector({
   return (
     <section className="run-selector" aria-label="Entrenamientos guardados">
       <div className="run-selector__panel">
-        <div className="garage-heading"><p className="eyebrow">01 / Campo de pruebas</p><Link to="/dashboard">← Paddock</Link></div>
+        <div className="garage-heading">
+          <p className="eyebrow">01 / Campo de pruebas</p>
+          <Link to="/dashboard">← Paddock</Link>
+        </div>
         <h1>Prepara tu escuderia.</h1>
         <p className="run-selector__lead">
           Genera un circuito reproducible, lanza una nueva temporada o recupera
           una partida guardada.
         </p>
 
-        <form className="run-selector__create run-setup" onSubmit={(event) => void submit(event)}>
+        <form
+          className="run-selector__create run-setup"
+          onSubmit={(event) => void submit(event)}
+        >
           <label>
             Nombre de la escuderia
             <input
@@ -56,8 +62,15 @@ export function TrainingRunSelector({
           <div className="track-preset track-preset--selected">
             <span>Desierto / Circuito procedural</span>
             <strong>Test Field</strong>
-            <TrackMap recipe={{ version: 'curved-loop-v1', seed: Number.isSafeInteger(seed) ? seed : 0 }} />
-            <small>Curvas variables · 4 sectores · reproducible por semilla</small>
+            <TrackMap
+              recipe={{
+                version: 'curved-loop-v1',
+                seed: Number.isSafeInteger(seed) ? seed : 0,
+              }}
+            />
+            <small>
+              Curvas variables · 4 sectores · reproducible por semilla
+            </small>
           </div>
           <label>
             Semilla del circuito
@@ -72,7 +85,9 @@ export function TrainingRunSelector({
               />
               <button
                 type="button"
-                onClick={() => setSeed(Math.floor(Math.random() * 2_147_483_648))}
+                onClick={() =>
+                  setSeed(Math.floor(Math.random() * 2_147_483_648))
+                }
               >
                 Generar otra
               </button>
@@ -80,9 +95,15 @@ export function TrainingRunSelector({
           </label>
           <details className="neat-advanced">
             <summary>Telemetria avanzada</summary>
-            <p>24 pilotos · 5 sensores · 6 entradas y 2 salidas. Cada semilla reproduce el mismo trazado.</p>
+            <p>
+              24 pilotos · 5 sensores · 6 entradas y 2 salidas. Cada semilla
+              reproduce el mismo trazado.
+            </p>
           </details>
-          <button className="primary-button" disabled={busy || name.trim().length < 3}>
+          <button
+            className="primary-button"
+            disabled={busy || name.trim().length < 3}
+          >
             Crear temporada
           </button>
         </form>
@@ -91,7 +112,9 @@ export function TrainingRunSelector({
 
         <div className="run-list">
           {runs.length === 0 && !busy && (
-            <p className="run-list__empty">Todavia no hay entrenamientos guardados.</p>
+            <p className="run-list__empty">
+              Todavia no hay entrenamientos guardados.
+            </p>
           )}
           {runs.map((run) => (
             <article className="run-item" key={run.id}>
@@ -102,7 +125,9 @@ export function TrainingRunSelector({
               >
                 <span>{run.name}</span>
                 <small>
-                  Gen. {run.currentGeneration} · Mejor {run.bestFitness.toFixed(0)} · Seed {run.config.track?.seed ?? run.seed}
+                  Gen. {run.currentGeneration} · Mejor{' '}
+                  {run.bestFitness.toFixed(0)} · Seed{' '}
+                  {run.config.track?.seed ?? run.seed}
                 </small>
               </button>
               <button
@@ -110,7 +135,9 @@ export function TrainingRunSelector({
                 className="run-item__delete"
                 disabled={busy}
                 onClick={() => {
-                  if (window.confirm(`¿Eliminar "${run.name}" y sus checkpoints?`)) {
+                  if (
+                    window.confirm(`¿Eliminar "${run.name}" y sus checkpoints?`)
+                  ) {
                     void onDelete(run)
                   }
                 }}

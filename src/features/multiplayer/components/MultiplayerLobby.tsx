@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import type { RoomState } from '../types/multiplayer.ts'
 import type { TrainingRun } from '../../training/api/training.api.ts'
+import { TrackMap } from '../../../shared/game/TrackMap.tsx'
 
 interface MultiplayerLobbyProps {
   busy: boolean
@@ -50,11 +51,11 @@ export function MultiplayerLobby({
     return (
       <section className="multiplayer-home">
         <div className="multiplayer-home__intro">
-          <p className="eyebrow">Carreras autoritativas</p>
-          <h1>Comparte pista. No estado.</h1>
+          <p className="eyebrow">02 / Torneo multijugador</p>
+          <h1>GÁNATE LA PISTA.</h1>
           <p>
-            El servidor calcula posiciones, checkpoints y resultados. Invita a
-            otro piloto con un codigo privado de seis caracteres.
+            Tu mejor piloto frente a otras escuderías. Prepara una carrera
+            privada o entra a la parrilla con el código de un amigo.
           </p>
         </div>
         <div className="multiplayer-actions">
@@ -83,7 +84,9 @@ export function MultiplayerLobby({
                 aria-label="Codigo de sala"
                 maxLength={6}
                 onChange={(event) =>
-                  setCode(event.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''))
+                  setCode(
+                    event.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''),
+                  )
                 }
                 placeholder="ABC123"
                 value={code}
@@ -97,17 +100,24 @@ export function MultiplayerLobby({
     )
   }
 
-  const currentPlayer = room.players.find((player) => player.userId === currentUserId)
+  const currentPlayer = room.players.find(
+    (player) => player.userId === currentUserId,
+  )
   const isHost = room.hostUserId === currentUserId
   const compatibleRuns = trainingRuns.filter(
     (run) =>
-      run.currentGeneration > 0 && run.config.simulationVersion === 'race-sim-v1',
+      run.currentGeneration > 0 &&
+      run.config.simulationVersion === 'race-sim-v1',
   )
   const canStart =
-    isHost && room.players.length >= 2 && room.players.every((player) => player.ready)
+    isHost &&
+    room.players.length >= 2 &&
+    room.players.every((player) => player.ready)
 
   return (
     <section className="multiplayer-lobby">
+      <p className="eyebrow">Torneo / Sala privada</p>
+      <h1 className="lobby-heading">Parrilla de salida.</h1>
       <div className="lobby-code">
         <span>Codigo privado</span>
         <strong>{room.code}</strong>
@@ -119,8 +129,17 @@ export function MultiplayerLobby({
       <section className="lobby-track" aria-label="Pista multijugador">
         <div>
           <span>Pista de la sala</span>
-          <strong>Curved Loop #{room.track.seed}</strong>
-          <small>La pista es independiente de los pilotos NEAT seleccionados.</small>
+          <strong>
+            {room.track.version === 'curved-loop-v1'
+              ? 'Curved Loop'
+              : 'Clásico'}{' '}
+            #{room.track.seed}
+          </strong>
+          <small>
+            Un circuito nuevo pone a prueba lo aprendido. Usa la semilla de
+            entrenamiento para comparar.
+          </small>
+          <TrackMap recipe={room.track} />
         </div>
         {isHost ? (
           <div className="lobby-track__controls">
@@ -133,7 +152,12 @@ export function MultiplayerLobby({
               value={trackSeed}
             />
             <button
-              disabled={busy || !Number.isSafeInteger(trackSeed)}
+              disabled={
+                busy ||
+                !Number.isSafeInteger(trackSeed) ||
+                trackSeed < 0 ||
+                trackSeed > 2_147_483_647
+              }
               onClick={() => onSelectTrack(trackSeed)}
             >
               Aplicar semilla
@@ -160,7 +184,9 @@ export function MultiplayerLobby({
             <span>{String(index + 1).padStart(2, '0')}</span>
             <div>
               <strong>{player.username}</strong>
-              <small>{player.userId === room.hostUserId ? 'Host' : 'Piloto'}</small>
+              <small>
+                {player.userId === room.hostUserId ? 'Host' : 'Piloto'}
+              </small>
               <small>{player.genomeName ?? 'Sin piloto NEAT'}</small>
             </div>
             <i className={player.ready ? 'is-ready' : ''}>
@@ -168,6 +194,21 @@ export function MultiplayerLobby({
             </i>
           </article>
         ))}
+        {Array.from(
+          { length: Math.max(0, room.maxPlayers - room.players.length) },
+          (_, index) => (
+            <article key={`empty-${index}`}>
+              <span>
+                {String(room.players.length + index + 1).padStart(2, '0')}
+              </span>
+              <div>
+                <strong>Plaza libre</strong>
+                <small>Invita a otra escudería</small>
+              </div>
+              <i>Esperando</i>
+            </article>
+          ),
+        )}
       </div>
 
       {error && <p className="multiplayer-error">{error}</p>}
@@ -177,20 +218,26 @@ export function MultiplayerLobby({
           disabled={currentPlayer?.ready}
           onChange={(event) => onSelectGenome(event.target.value)}
           value={
-            trainingRuns.find((run) => run.name === currentPlayer?.genomeName)?.id ?? ''
+            trainingRuns.find((run) => run.name === currentPlayer?.genomeName)
+              ?.id ?? ''
           }
         >
           <option value="">Selecciona un entrenamiento</option>
           {compatibleRuns.map((run) => (
-              <option key={run.id} value={run.id}>
-                {run.name} · gen. {run.currentGeneration}
-              </option>
-            ))}
+            <option key={run.id} value={run.id}>
+              {run.name} · gen. {run.currentGeneration} · pista #
+              {run.config.track?.seed ?? run.seed}
+            </option>
+          ))}
         </select>
       </label>
+      <p>
+        Compite tu mejor piloto guardado. Espera al guardado de la generación
+        antes de seleccionarlo.
+      </p>
       {compatibleRuns.length === 0 && (
         <p className="multiplayer-error">
-          Entrena al menos una generacion nueva con race-sim-v1 para competir.
+          Completa y guarda una generación de entrenamiento para competir.
         </p>
       )}
       <div className="lobby-actions">

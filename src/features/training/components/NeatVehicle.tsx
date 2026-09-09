@@ -37,9 +37,7 @@ export function NeatVehicle({
   onPose,
 }: NeatVehicleProps) {
   const meshRef = useRef<Group>(null)
-  const state = useRef(
-    createSimulationState(track),
-  )
+  const state = useRef(createSimulationState(track))
   const accumulator = useRef(0)
   const finished = useRef(false)
 
@@ -84,7 +82,13 @@ export function NeatVehicle({
       position={[state.current.x, 0, state.current.z]}
       rotation={[0, state.current.yaw, 0]}
     >
-      <RaceCarModel color={`hsl(${hue},72%,56%)`} selected={selected} getSpeed={() => finished.current || !running ? 0 : state.current.speed} />
+      <RaceCarModel
+        color={`hsl(${hue},72%,56%)`}
+        selected={selected}
+        getSpeed={() =>
+          finished.current || !running ? 0 : state.current.speed
+        }
+      />
     </group>
   )
 }

@@ -26,14 +26,16 @@ describe('TrainingRunSelector', () => {
     const user = userEvent.setup()
 
     render(
-      <MemoryRouter><TrainingRunSelector
-        busy={false}
-        error={null}
-        onCreate={vi.fn().mockResolvedValue(undefined)}
-        onDelete={vi.fn().mockResolvedValue(undefined)}
-        onLoad={onLoad}
-        runs={[savedRun]}
-      /></MemoryRouter>,
+      <MemoryRouter>
+        <TrainingRunSelector
+          busy={false}
+          error={null}
+          onCreate={vi.fn().mockResolvedValue(undefined)}
+          onDelete={vi.fn().mockResolvedValue(undefined)}
+          onLoad={onLoad}
+          runs={[savedRun]}
+        />
+      </MemoryRouter>,
     )
 
     await user.click(

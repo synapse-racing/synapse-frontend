@@ -84,9 +84,13 @@ export function MultiplayerPage() {
     <main className="multiplayer-page">
       {!racing && (
         <header className="multiplayer-nav">
-          <Link to="/dashboard">← Dashboard</Link>
+          <Link to="/dashboard">← Paddock</Link>
           <span className={`network-state network-state--${connection}`}>
-            {connection}
+            {connection === 'connected'
+              ? 'En línea'
+              : connection === 'connecting'
+                ? 'Conectando'
+                : 'Sin conexión'}
           </span>
         </header>
       )}

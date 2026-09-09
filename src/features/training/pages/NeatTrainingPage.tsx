@@ -11,10 +11,7 @@ import {
 import { ApiError } from '../../../shared/api/http.ts'
 import { useAuth } from '../../auth/context/useAuth.ts'
 import * as trainingApi from '../api/training.api.ts'
-import type {
-  SaveCheckpointInput,
-  TrainingRun,
-} from '../api/training.api.ts'
+import type { SaveCheckpointInput, TrainingRun } from '../api/training.api.ts'
 import {
   NeatTrainingHud,
   type PersistenceStatus,
@@ -22,10 +19,7 @@ import {
 } from '../components/NeatTrainingHud.tsx'
 import { NeatTrainingScene } from '../components/NeatTrainingScene.tsx'
 import { TrainingRunSelector } from '../components/TrainingRunSelector.tsx'
-import {
-  calculateFitness,
-  type AgentRuntime,
-} from '../domain/fitness.ts'
+import { calculateFitness, type AgentRuntime } from '../domain/fitness.ts'
 import {
   advanceTrackProgress,
   initialTrackProgress,
@@ -33,10 +27,7 @@ import {
 } from '../domain/progress.ts'
 import { generateTrack } from '../domain/track.ts'
 import type { Genome } from '../neat/genes.ts'
-import {
-  NeatPopulation,
-  type GenerationMetrics,
-} from '../neat/population.ts'
+import { NeatPopulation, type GenerationMetrics } from '../neat/population.ts'
 
 const trainingSeed = 42_170
 const neatCarPrefix = 'neat-car:'
@@ -72,7 +63,9 @@ export function NeatTrainingPage() {
   const [alive, setAlive] = useState(engine.config.populationSize)
   const [metrics, setMetrics] = useState(() => createInitialMetrics(engine))
   const [currentBest, setCurrentBest] = useState(0)
-  const [cameraMode, setCameraMode] = useState<'overview' | 'follow'>('overview')
+  const [cameraMode, setCameraMode] = useState<'overview' | 'follow'>(
+    'overview',
+  )
   const [selectedCar, setSelectedCar] = useState(0)
   const [runId, setRunId] = useState(0)
   const [selectedRun, setSelectedRun] = useState<TrainingRun | null>(null)
@@ -113,6 +106,7 @@ export function NeatTrainingPage() {
   }
 
   function activateTraining(nextEngine: NeatPopulation, run: TrainingRun) {
+    setSelectedCar(0)
     setEngine(nextEngine)
     setGenomes([...nextEngine.genomes])
     setStatus('idle')
@@ -149,7 +143,9 @@ export function NeatTrainingPage() {
       activateTraining(nextEngine, run)
       await runsQuery.refetch()
     } catch (error) {
-      setSelectorError(error instanceof Error ? error.message : 'No se pudo crear')
+      setSelectorError(
+        error instanceof Error ? error.message : 'No se pudo crear',
+      )
     } finally {
       setSelectorBusy(false)
     }
@@ -181,10 +177,14 @@ export function NeatTrainingPage() {
   async function deleteRun(run: TrainingRun) {
     setSelectorBusy(true)
     try {
-      await withFreshAccess((token) => trainingApi.deleteTrainingRun(token, run.id))
+      await withFreshAccess((token) =>
+        trainingApi.deleteTrainingRun(token, run.id),
+      )
       await runsQuery.refetch()
     } catch (error) {
-      setSelectorError(error instanceof Error ? error.message : 'No se pudo eliminar')
+      setSelectorError(
+        error instanceof Error ? error.message : 'No se pudo eliminar',
+      )
     } finally {
       setSelectorBusy(false)
     }
@@ -292,7 +292,9 @@ export function NeatTrainingPage() {
 
     const timer = window.setTimeout(() => {
       const completedMetrics = engine.evolve(fitnessRef.current)
-      const durationMs = Math.round(performance.now() - generationStartedAt.current)
+      const durationMs = Math.round(
+        performance.now() - generationStartedAt.current,
+      )
       setMetrics(completedMetrics)
       setGenomes([...engine.genomes])
       setAlive(engine.config.populationSize)
