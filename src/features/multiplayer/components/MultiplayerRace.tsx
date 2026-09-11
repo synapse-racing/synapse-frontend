@@ -1,4 +1,5 @@
-import { useMemo, useRef, useState } from 'react'
+import { useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { SnapshotTimeline } from '../domain/snapshotTimeline.ts'
 import { SceneCanvas } from '../../../shared/three/SceneCanvas.tsx'
 import { TrackEnvironment } from '../../../shared/three/TrackEnvironment.tsx'
 import { RaceCamera, type CarPose } from '../../../shared/three/RaceCamera.tsx'
@@ -31,6 +32,10 @@ export function MultiplayerRace({
   )
   const [observedId, setObservedId] = useState(currentUserId)
   const poses = useRef(new Map<string, CarPose>())
+  const [timeline] = useState(() => new SnapshotTimeline())
+  useLayoutEffect(() => {
+    timeline.push(snapshot, performance.now())
+  }, [snapshot, timeline])
   const currentPlayer = snapshot.players.find(
     (player) => player.userId === currentUserId,
   )
@@ -50,6 +55,7 @@ export function MultiplayerRace({
             key={player.userId}
             isCurrentUser={player.userId === currentUserId}
             player={player}
+            timeline={timeline}
             onPose={(id, pose) => poses.current.set(id, pose)}
           />
         ))}
