@@ -53,7 +53,10 @@ export function MultiplayerPage() {
       setSnapshot(null)
       setResult(null)
     })
-    socket.on('race:start', () => setResult(null))
+    socket.on('race:start', () => {
+      setResult(null)
+      setSnapshot(null)
+    })
     socket.on('race:snapshot', setSnapshot)
     socket.on('race:finish', setResult)
 
