@@ -10,7 +10,7 @@ import type { Genome } from '../neat/genes.ts'
 import {
   createSimulationState,
   senseSimulation,
-  simulationMaxSeconds,
+  raceTimeLimit,
   simulationStepSeconds,
   stepSimulation,
 } from '../simulation/race-contract.ts'
@@ -58,7 +58,7 @@ export function NeatVehicle({
         finished.current = true
         onFinish(genome.id, {
           aliveSeconds: Math.min(
-            simulationMaxSeconds,
+            raceTimeLimit(track),
             simulation.elapsedSteps * simulationStepSeconds,
           ),
           collided: simulation.collided,

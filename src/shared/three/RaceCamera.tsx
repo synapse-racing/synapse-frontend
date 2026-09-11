@@ -10,8 +10,10 @@ export interface CarPose {
 }
 export function RaceCamera({
   mode,
+  extent = 50,
   getTarget,
 }: {
+  extent?: number
   mode: 'overview' | 'follow'
   getTarget: () => CarPose | undefined
 }) {
@@ -21,11 +23,11 @@ export function RaceCamera({
   const look = useMemo(() => new Vector3(), [])
   useEffect(() => {
     if (mode === 'overview') {
-      const fit = Math.max(1, 1.1 / (size.width / size.height))
+      const fit = Math.max(1, extent / 50) * Math.max(1, 1.1 / (size.width / size.height))
       camera.position.set(0, 52 * fit, 46 * fit)
       camera.lookAt(0, 0, 0)
     }
-  }, [camera, mode, size.width, size.height])
+  }, [camera, mode, extent, size.width, size.height])
   useFrame((_, delta) => {
     if (mode !== 'follow') return
     const target = getTarget()
@@ -44,7 +46,7 @@ export function RaceCamera({
       makeDefault
       target={[0, 0, 0]}
       minDistance={15}
-      maxDistance={100}
+      maxDistance={Math.max(100, extent * 4)}
       maxPolarAngle={Math.PI / 2.15}
     />
   ) : null

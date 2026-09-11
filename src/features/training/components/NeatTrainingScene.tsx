@@ -45,6 +45,7 @@ export function NeatTrainingScene({
         />
       ))}
       <RaceCamera
+          extent={Math.max(...track.groundSize)}
         mode={cameraMode}
         getTarget={() =>
           poses.current.get(selectedGenomeId) ?? {

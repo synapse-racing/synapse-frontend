@@ -130,7 +130,9 @@ export function MultiplayerLobby({
         <div>
           <span>Pista de la sala</span>
           <strong>
-            {room.track.version === 'curved-loop-v1'
+            {room.track.version === 'technical-loop-v2'
+              ? 'Circuito Técnico'
+              : room.track.version === 'curved-loop-v1'
               ? 'Curved Loop'
               : 'Clásico'}{' '}
             #{room.track.seed}

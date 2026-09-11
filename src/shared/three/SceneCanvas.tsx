@@ -33,7 +33,7 @@ export function SceneCanvas({
         camera={
           garage
             ? { position: [5, 2.8, 6], fov: 36, near: 0.1, far: 80 }
-            : { position: [0, 52, 46], fov: 52, near: 0.1, far: 400 }
+            : { position: [0, 52, 46], fov: 52, near: 0.1, far: 2000 }
         }
         gl={{
           antialias: preferences.quality === 'high',

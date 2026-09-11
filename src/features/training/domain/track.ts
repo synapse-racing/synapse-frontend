@@ -2,7 +2,7 @@ export type Vector3Tuple = [number, number, number]
 export type BoundarySegment = readonly [number, number, number, number]
 
 export interface TrackRecipe {
-  version: 'rectangular-ring-v1' | 'curved-loop-v1'
+  version: 'rectangular-ring-v1' | 'curved-loop-v1' | 'technical-loop-v2'
   seed: number
 }
 
@@ -79,21 +79,27 @@ function segmentWall(
 
 function generateCurvedTrack(recipe: TrackRecipe): TrackDefinition {
   const random = randomValues(recipe.seed)
-  const radiusX = halfStep(random, 14, 19)
-  const radiusZ = halfStep(random, 17, 24)
+  const technical = recipe.version === 'technical-loop-v2'
+  const radiusX = technical ? halfStep(random, 50, 65) : halfStep(random, 14, 19)
+  const radiusZ = halfStep(random, technical ? 60 : 17, technical ? 75 : 24)
   const driveHalfWidth = halfStep(random, 3.25, 4.25)
   const waveTwo = 0.06 + random() * 0.08
   const waveThree = 0.04 + random() * 0.07
   const phaseTwo = random() * Math.PI * 2
   const phaseThree = random() * Math.PI * 2
-  const sampleCount = 72
+  const harmonic = technical ? 4 + Math.floor(random() * 3) : 0
+  const wave = technical ? 0.09 + random() * 0.035 : 0
+  const phase = technical ? random() * Math.PI * 2 : 0
+  let scale = 1
+  const sampleCount = technical ? 240 : 72
 
   const pointAt = (angle: number): readonly [number, number] => {
     const radius =
       1 +
       waveTwo * Math.sin(angle * 2 + phaseTwo) +
-      waveThree * Math.sin(angle * 3 + phaseThree)
-    return [radiusX * radius * Math.cos(angle), radiusZ * radius * Math.sin(angle)]
+      waveThree * Math.sin(angle * 3 + phaseThree) +
+      wave * Math.sin(angle * harmonic + phase)
+    return [scale * radiusX * radius * Math.cos(angle), scale * radiusZ * radius * Math.sin(angle)]
   }
   const tangentAt = (angle: number): readonly [number, number] => {
     const before = pointAt(angle - 0.001)
@@ -102,6 +108,21 @@ function generateCurvedTrack(recipe: TrackRecipe): TrackDefinition {
     const dz = after[1] - before[1]
     const length = Math.hypot(dx, dz)
     return [dx / length, dz / length]
+  }
+
+  // Keep tight bends wide enough for the road offsets and a car to turn.
+  if (technical) {
+    let minimumRadius = Infinity
+    for (let i = 0; i < sampleCount; i++) {
+      const angle = i / sampleCount * Math.PI * 2
+      const a = pointAt(angle - 0.005), b = pointAt(angle), c = pointAt(angle + 0.005)
+      const ab = Math.hypot(b[0] - a[0], b[1] - a[1])
+      const bc = Math.hypot(c[0] - b[0], c[1] - b[1])
+      const ac = Math.hypot(c[0] - a[0], c[1] - a[1])
+      const cross = Math.abs((b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0]))
+      if (cross > 1e-10) minimumRadius = Math.min(minimumRadius, ab * bc * ac / (2 * cross))
+    }
+    scale = Math.max(1, 8.5 / minimumRadius)
   }
 
   const centerline = Array.from({ length: sampleCount }, (_, index) =>
@@ -142,7 +163,9 @@ function generateCurvedTrack(recipe: TrackRecipe): TrackDefinition {
     walls.push(segmentWall(`right-${index}`, right[index], right[next]))
   }
 
-  const checkpointAngles = [Math.PI, Math.PI * 1.5, 0, Math.PI * 0.5]
+  const checkpointAngles = technical
+    ? Array.from({ length: 16 }, (_, index) => ((index + 1) % 16) / 16 * Math.PI * 2)
+    : [Math.PI, Math.PI * 1.5, 0, Math.PI * 0.5]
   const checkpoints = checkpointAngles.map((angle, index) => {
     const point = pointAt(angle)
     const tangent = tangentAt(angle)
@@ -156,7 +179,7 @@ function generateCurvedTrack(recipe: TrackRecipe): TrackDefinition {
       size: [driveHalfWidth * 2 - 0.5, 0.7, 1] as Vector3Tuple,
     }
   })
-  const spawnAngle = Math.PI - 0.35
+  const spawnAngle = technical ? 0 : Math.PI - 0.35
   const spawn = pointAt(spawnAngle)
   const spawnTangent = tangentAt(spawnAngle)
   const extentX = Math.max(...left.map(([x]) => Math.abs(x)), ...right.map(([x]) => Math.abs(x)))
@@ -164,7 +187,7 @@ function generateCurvedTrack(recipe: TrackRecipe): TrackDefinition {
 
   return {
     recipe: { ...recipe },
-    name: `Circuito Curvas ${String(recipe.seed).padStart(6, '0')}`,
+    name: `${technical ? "Circuito Técnico" : "Circuito Curvas"} ${String(recipe.seed).padStart(6, '0')}`,
     groundSize: [Math.ceil((extentX + 3) * 2), Math.ceil((extentZ + 3) * 2)],
     spawnPosition: [spawn[0], 0.65, spawn[1]],
     spawnYaw: Math.atan2(-spawnTangent[0], -spawnTangent[1]),
@@ -238,6 +261,6 @@ export const prototypeTrack = generateTrack({
 })
 
 export const defaultTrackRecipe: TrackRecipe = {
-  version: 'curved-loop-v1',
+  version: 'technical-loop-v2',
   seed: 42_170,
 }

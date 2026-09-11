@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useMemo, useRef } from 'react'
 import {
   CanvasTexture,
+  Color,
   DoubleSide,
   InstancedMesh,
   Object3D,
@@ -53,6 +54,31 @@ function BoundaryPaint({
   )
 }
 
+function TrackBarriers({ track, desert }: { track: TrackDefinition; desert: boolean }) {
+  const mesh = useRef<InstancedMesh>(null)
+  const walls = useMemo(() => track.walls.filter((_, index) => !desert || index % 6 < 2), [track, desert])
+  useLayoutEffect(() => {
+    const object = new Object3D()
+    walls.forEach((wall, index) => {
+      object.position.set(wall.position[0], desert ? 0.25 : 0.38, wall.position[2])
+      object.rotation.set(0, wall.rotationY, 0)
+      object.scale.set(desert ? 1 : wall.size[0], 1, 1)
+      object.updateMatrix()
+      mesh.current?.setMatrixAt(index, object.matrix)
+      mesh.current?.setColorAt(index, new Color(desert ? '#e17c3e' : index % 4 < 2 ? '#c75039' : '#e6e2ce'))
+    })
+    if (mesh.current) {
+      mesh.current.instanceMatrix.needsUpdate = true
+      if (mesh.current.instanceColor) mesh.current.instanceColor.needsUpdate = true
+      mesh.current.computeBoundingSphere()
+    }
+  }, [walls, desert])
+  return <instancedMesh ref={mesh} args={[undefined, undefined, walls.length]} receiveShadow>
+    {desert ? <coneGeometry args={[0.2, 0.5, 8]} /> : <boxGeometry args={[1, 0.7, 0.3]} />}
+    <meshStandardMaterial roughness={0.9} />
+  </instancedMesh>
+}
+
 function SectorGate({
   track,
   theme,
@@ -75,7 +101,7 @@ function SectorGate({
     context.font = 'bold italic 35px Arial'
     context.textAlign = 'center'
     context.fillText(
-      theme === 'desert' ? 'SYNAPSE / TEST FIELD' : 'SYNAPSE / FINISH',
+      theme === 'desert' ? 'SYNAPSE / TEST FIELD' : 'SYNAPSE / START + FINISH',
       256,
       57,
     )
@@ -138,7 +164,7 @@ export function TrackEnvironment({
   return (
     <>
       <color attach="background" args={[desert ? '#d4b78c' : '#a8c3cf']} />
-      <fog attach="fog" args={[desert ? '#d4b78c' : '#a8c3cf', 75, 230]} />
+      <fog attach="fog" args={[desert ? '#d4b78c' : '#a8c3cf', Math.max(75, radius * 2), Math.max(230, radius * 5)]} />
       <hemisphereLight
         args={[
           desert ? '#fff1ce' : '#e8f5ff',
@@ -180,43 +206,20 @@ export function TrackEnvironment({
         />
       </mesh>
       <BoundaryPaint track={track} theme={theme} />
-      {track.walls
-        .filter((_, index) => (desert ? index % 6 < 2 : true))
-        .map((wall, index) => (
-          <mesh
-            key={wall.id}
-            position={[
-              wall.position[0],
-              desert ? 0.25 : 0.38,
-              wall.position[2],
-            ]}
-            rotation={[0, wall.rotationY, 0]}
-            receiveShadow
-          >
-            {desert ? (
-              <coneGeometry args={[0.2, 0.5, 8]} />
-            ) : (
-              <boxGeometry args={[wall.size[0], 0.7, 0.3]} />
-            )}
-            <meshStandardMaterial
-              color={desert ? '#e17c3e' : index % 4 < 2 ? '#c75039' : '#e6e2ce'}
-              roughness={0.9}
-            />
-          </mesh>
-        ))}
+      <TrackBarriers track={track} desert={desert} />
       {track.checkpoints.map((checkpoint) => (
         <group
           key={checkpoint.id}
           position={[checkpoint.position[0], 0.015, checkpoint.position[2]]}
           rotation={[0, checkpoint.rotationY, 0]}
         >
-          {Array.from({ length: 10 }, (_, index) => (
+          {Array.from({ length: checkpoint.index === track.checkpoints.length - 1 ? 10 : 1 }, (_, index) => (
             <mesh
               key={index}
-              position={[((index - 4.5) * checkpoint.size[0]) / 10, 0, 0]}
+              position={[checkpoint.index === track.checkpoints.length - 1 ? ((index - 4.5) * checkpoint.size[0]) / 10 : 0, 0, 0]}
               rotation={[-Math.PI / 2, 0, 0]}
             >
-              <planeGeometry args={[checkpoint.size[0] / 10, 0.65]} />
+              <planeGeometry args={[checkpoint.size[0] / (checkpoint.index === track.checkpoints.length - 1 ? 10 : 1), 0.65]} />
               <meshBasicMaterial
                 color={index % 2 === 0 ? '#ebe4ce' : '#343b35'}
               />

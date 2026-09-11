@@ -64,12 +64,12 @@ export function TrainingRunSelector({
             <strong>Test Field</strong>
             <TrackMap
               recipe={{
-                version: 'curved-loop-v1',
+                version: 'technical-loop-v2',
                 seed: Number.isSafeInteger(seed) ? seed : 0,
               }}
             />
             <small>
-              Curvas variables · 4 sectores · reproducible por semilla
+              Curvas enlazadas · 16 sectores · reproducible por semilla
             </small>
           </div>
           <label>
