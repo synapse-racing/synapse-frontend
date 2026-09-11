@@ -81,7 +81,7 @@ export function MultiplayerPage() {
   }
 
   const currentUserId = auth.user?.id ?? ''
-  const racing = room && room.status !== 'LOBBY'
+  const racing = room && (room.status !== 'LOBBY' || result !== null || snapshot?.status === 'FINISHED')
 
   return (
     <main className="multiplayer-page">
@@ -102,6 +102,10 @@ export function MultiplayerPage() {
         <MultiplayerRace
           currentUserId={currentUserId}
           onLeave={leaveRoom}
+          onReturnToRoom={() => {
+            setResult(null)
+            setSnapshot(null)
+          }}
           result={result}
           room={room}
           snapshot={snapshot}
