@@ -15,6 +15,7 @@ import { RemoteRaceCar } from './RemoteRaceCar.tsx'
 interface MultiplayerRaceProps {
   currentUserId: string
   onLeave: () => void
+  onReturnToRoom: () => void
   result: RaceResult | null
   room: RoomState
   snapshot: RaceSnapshot
@@ -23,6 +24,7 @@ interface MultiplayerRaceProps {
 export function MultiplayerRace({
   currentUserId,
   onLeave,
+  onReturnToRoom,
   result,
   room,
   snapshot,
@@ -168,8 +170,8 @@ export function MultiplayerRace({
                 </li>
               ))}
             </ol>
-            <button className="primary-button" onClick={onLeave}>
-              Volver a salas
+            <button className="primary-button" onClick={onReturnToRoom}>
+              Volver a la sala
             </button>
           </div>
         </div>
