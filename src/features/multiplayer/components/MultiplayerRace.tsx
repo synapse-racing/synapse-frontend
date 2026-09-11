@@ -62,6 +62,7 @@ export function MultiplayerRace({
           />
         ))}
         <RaceCamera
+          extent={Math.max(...track.groundSize)}
           mode={cameraMode}
           getTarget={() => poses.current.get(observedId)}
         />
@@ -165,7 +166,7 @@ export function MultiplayerRace({
                           : 'Eliminado por colision'
                         : player.finishedAt
                           ? 'Finalizo'
-                          : `${player.passedCheckpoints}/4 checkpoints`}
+                          : `${player.passedCheckpoints}/${track.checkpoints.length} checkpoints`}
                   </small>
                 </li>
               ))}

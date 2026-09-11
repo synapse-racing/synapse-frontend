@@ -1,5 +1,6 @@
 export const simulationStepSeconds = 1 / 20
 export const simulationMaxSeconds = 28
+export const raceTimeLimit = (track: TrackDefinition) => track.recipe.version === 'technical-loop-v2' ? 180 : simulationMaxSeconds
 
 export interface SimulationState {
   x: number
@@ -115,7 +116,7 @@ export function stepSimulation(
       collision ||
       stalled ||
       state.laps >= 1 ||
-      elapsed >= simulationMaxSeconds,
+      elapsed >= raceTimeLimit(track),
   }
 }
 
