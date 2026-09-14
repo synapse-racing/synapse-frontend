@@ -133,7 +133,7 @@ export function MultiplayerPage() {
           }
           onSelectTrack={(seed) =>
             socketRef.current?.emit('room:select-track', {
-              track: { version: 'technical-loop-v2', seed },
+              track: { version: 'grand-prix-v3', seed },
             })
           }
           onStart={() => socketRef.current?.emit('race:start')}

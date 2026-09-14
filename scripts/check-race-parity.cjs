@@ -35,7 +35,7 @@ function evaluate(genome, recipe) {
   const state = createSimulationState(track)
   const race = new RaceSimulation([{ userId: 'test', username: 'test', genome }], 0, serverTrack)
   assert.deepEqual({ x: state.x, z: state.z, yaw: state.yaw }, serverTrack.spawn)
-  for (let step = 0; step < (recipe.version === 'technical-loop-v2' ? 3600 : 560); step++) {
+  for (let step = 0; step < (['technical-loop-v2', 'grand-prix-v3'].includes(recipe.version) ? 3600 : 560); step++) {
     const sensors = senseSimulation(state, track)
     assert.deepEqual(sensors, senseTrack(state.x, state.z, state.yaw, serverTrack))
     const inputs = [...sensors, Math.min(1, Math.abs(state.speed) / 13)]
@@ -65,6 +65,7 @@ for (const seed of seeds) {
     completed += evaluate(genome, { version: 'curved-loop-v1', seed }).laps
     evaluate(genome, { version: 'rectangular-ring-v1', seed })
     evaluate(genome, { version: 'technical-loop-v2', seed })
+    evaluate(genome, { version: 'grand-prix-v3', seed })
   }
   console.log(`Initial population, seed ${seed}: ${completed}/${population.genomes.length} completed the curved track`)
   if (completed === 0) populationsWithoutFinishers++

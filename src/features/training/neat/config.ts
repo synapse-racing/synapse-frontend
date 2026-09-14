@@ -25,5 +25,5 @@ export const defaultNeatConfig: NeatConfig = {
   addConnectionRate: 0.08,
   addNodeRate: 0.04,
   toggleConnectionRate: 0.02,
-  track: { version: 'technical-loop-v2', seed: 42_170 },
+  track: { version: 'grand-prix-v3', seed: 42_170 },
 }
