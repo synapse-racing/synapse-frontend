@@ -1,6 +1,6 @@
 export const simulationStepSeconds = 1 / 20
 export const simulationMaxSeconds = 28
-export const raceTimeLimit = (track: TrackDefinition) => track.recipe.version === 'technical-loop-v2' ? 180 : simulationMaxSeconds
+export const raceTimeLimit = (track: TrackDefinition) => (track.recipe.version === 'technical-loop-v2' || track.recipe.version === 'grand-prix-v3') ? 180 : simulationMaxSeconds
 
 export interface SimulationState {
   x: number

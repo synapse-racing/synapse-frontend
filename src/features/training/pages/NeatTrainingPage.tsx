@@ -131,7 +131,7 @@ export function NeatTrainingPage() {
     setSelectorError(null)
     try {
       const nextEngine = new NeatPopulation(seed, {
-        track: { version: 'technical-loop-v2', seed },
+        track: { version: 'grand-prix-v3', seed },
       })
       const run = await withFreshAccess((token) =>
         trainingApi.createTrainingRun(token, {
@@ -246,7 +246,7 @@ export function NeatTrainingPage() {
       (values[0] & 0x7fffffff) === currentSeed
         ? (currentSeed + 1) % 2_147_483_648
         : values[0] & 0x7fffffff
-    const track = { version: 'technical-loop-v2' as const, seed: nextSeed }
+    const track = { version: 'grand-prix-v3' as const, seed: nextSeed }
 
     setStatus('paused')
     setPersistenceStatus('saving')

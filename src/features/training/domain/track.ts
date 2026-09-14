@@ -1,8 +1,10 @@
+import { generateGrandPrix } from './grand-prix.ts'
+
 export type Vector3Tuple = [number, number, number]
 export type BoundarySegment = readonly [number, number, number, number]
 
 export interface TrackRecipe {
-  version: 'rectangular-ring-v1' | 'curved-loop-v1' | 'technical-loop-v2'
+  version: 'rectangular-ring-v1' | 'curved-loop-v1' | 'technical-loop-v2' | 'grand-prix-v3'
   seed: number
 }
 
@@ -250,6 +252,20 @@ function generateRectangularTrack(recipe: TrackRecipe): TrackDefinition {
 }
 
 export function generateTrack(recipe: TrackRecipe): TrackDefinition {
+  if (recipe.version === 'grand-prix-v3') {
+    const generated = generateGrandPrix(recipe.seed)
+    const extentX = Math.max(...generated.boundaries.flatMap(([x1, , x2]) => [Math.abs(x1), Math.abs(x2)]))
+    const extentZ = Math.max(...generated.boundaries.flatMap(([, z1, , z2]) => [Math.abs(z1), Math.abs(z2)]))
+    return {
+      recipe: { ...recipe }, name: `Circuito Grand Prix ${recipe.seed}`,
+      groundSize: [Math.ceil((extentX + 3) * 2), Math.ceil((extentZ + 3) * 2)],
+      spawnPosition: [generated.spawn.x, 0.65, generated.spawn.z], spawnYaw: generated.spawn.yaw,
+      geometry: generated.geometry, boundaries: generated.boundaries,
+      walls: generated.boundaries.map(([x1, z1, x2, z2], i) => segmentWall(`barrier-${i}`, [x1, z1], [x2, z2])),
+      checkpoints: generated.checkpoints.map((p, index) => ({ id: `sector-${index}`, index,
+        position: [p.x, 0.35, p.z], rotationY: p.yaw, size: [p.halfWidth * 2, 0.7, p.halfDepth * 2] })),
+    }
+  }
   return recipe.version === 'rectangular-ring-v1'
     ? generateRectangularTrack(recipe)
     : generateCurvedTrack(recipe)
@@ -261,6 +277,6 @@ export const prototypeTrack = generateTrack({
 })
 
 export const defaultTrackRecipe: TrackRecipe = {
-  version: 'technical-loop-v2',
+  version: 'grand-prix-v3',
   seed: 42_170,
 }
