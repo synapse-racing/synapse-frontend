@@ -15,6 +15,7 @@ interface NeatTrainingSceneProps {
   track: TrackDefinition
   cameraMode: 'overview' | 'follow'
   selectedGenomeId: string
+  showRaycasts: boolean
 }
 
 export function NeatTrainingScene({
@@ -26,6 +27,7 @@ export function NeatTrainingScene({
   track,
   cameraMode,
   selectedGenomeId,
+  showRaycasts,
 }: NeatTrainingSceneProps) {
   const poses = useRef(new Map<string, CarPose>())
   return (
@@ -41,6 +43,7 @@ export function NeatTrainingScene({
           running={running}
           track={track}
           selected={genome.id === selectedGenomeId}
+          showRaycasts={showRaycasts}
           onPose={(id, pose) => poses.current.set(id, pose)}
         />
       ))}

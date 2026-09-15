@@ -8,6 +8,39 @@ import {
 } from './race-contract.ts'
 
 describe('race simulation contract', () => {
+  it('draws the actual sensor hits without changing sensor readings or car state', () => {
+    const state = createSimulationState()
+    state.z = 10
+    const before = structuredClone(state)
+    const positions = new Float32Array(30)
+    const hits = new Uint8Array(5)
+    const readings = senseSimulation(state)
+    expect(senseSimulation(state, prototypeTrack, positions, hits)).toEqual(readings)
+    expect([...hits]).toEqual([1, 1, 0, 1, 1])
+    expect(state).toEqual(before)
+    for (let i = 0; i < 5; i++) {
+      const offset = i * 6
+      expect(positions[offset]).toBe(-10)
+      expect(positions[offset + 2]).toBe(8.75)
+      expect(Math.hypot(positions[offset + 3] - positions[offset], positions[offset + 5] - positions[offset + 2])).toBeCloseTo(readings[i] * 8, 5)
+    }
+    expect(positions[3]).toBeCloseTo(-13.35, 5)
+    expect(positions[27]).toBeCloseTo(-6.65, 5)
+    expect(positions[17]).toBeCloseTo(0.75, 5)
+  })
+
+  it('marks hits at the maximum range and clears them when the border is out of range', () => {
+    const state = createSimulationState()
+    const hits = new Uint8Array(5)
+    const originZ = state.z - 1.25
+    const track = { ...prototypeTrack, boundaries: [[-20, originZ - 8, 0, originZ - 8] as const] }
+    expect(senseSimulation(state, track, undefined, hits)[2]).toBe(1)
+    expect(hits[2]).toBe(1)
+    track.boundaries = [[-20, originZ - 8.01, 0, originZ - 8.01]]
+    senseSimulation(state, track, undefined, hits)
+    expect([...hits]).toEqual([0, 0, 0, 0, 0])
+  })
+
   it('produces a stable golden straight-line trajectory', () => {
     const state = createSimulationState()
 

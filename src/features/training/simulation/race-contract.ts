@@ -24,7 +24,7 @@ export interface SimulationStep {
   finished: boolean
 }
 
-const sensorAngles = [-60, -30, 0, 30, 60].map(
+export const sensorAngles = [-60, -30, 0, 30, 60].map(
   (degrees) => (degrees * Math.PI) / 180,
 )
 export function createSimulationState(
@@ -123,13 +123,16 @@ export function stepSimulation(
 export function senseSimulation(
   state: SimulationState,
   track: TrackDefinition = prototypeTrack,
+  rayPositions?: Float32Array,
+  rayHits?: Uint8Array,
 ): number[] {
   const originX = state.x - Math.sin(state.yaw) * 1.25
   const originZ = state.z - Math.cos(state.yaw) * 1.25
-  return sensorAngles.map((angle) => {
+  return sensorAngles.map((angle, index) => {
     const directionX = -Math.sin(state.yaw - angle)
     const directionZ = -Math.cos(state.yaw - angle)
     let nearest = 8
+    let hit = false
     for (const [x1, z1, x2, z2] of track.boundaries) {
       const segmentX = x2 - x1
       const segmentZ = z2 - z1
@@ -140,8 +143,19 @@ export function senseSimulation(
       const distance = (offsetX * segmentZ - offsetZ * segmentX) / denominator
       const position = (offsetX * directionZ - offsetZ * directionX) / denominator
       if (distance >= 0 && position >= 0 && position <= 1) {
+        if (distance <= 8) hit = true
         nearest = Math.min(nearest, distance)
       }
+    }
+    if (rayHits) rayHits[index] = hit ? 1 : 0
+    if (rayPositions) {
+      const offset = index * 6
+      rayPositions[offset] = originX
+      rayPositions[offset + 1] = 0.4
+      rayPositions[offset + 2] = originZ
+      rayPositions[offset + 3] = originX + directionX * nearest
+      rayPositions[offset + 4] = 0.4
+      rayPositions[offset + 5] = originZ + directionZ * nearest
     }
     return Math.min(1, nearest / 8)
   })
