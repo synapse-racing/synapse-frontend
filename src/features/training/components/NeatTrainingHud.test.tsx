@@ -9,6 +9,7 @@ describe('NeatTrainingHud', () => {
     const onRegenerateTrack = vi.fn()
     const onPauseToggle = vi.fn()
     const onCameraModeChange = vi.fn()
+    const onShowRaycastsChange = vi.fn()
     const user = userEvent.setup()
 
     render(
@@ -25,6 +26,8 @@ describe('NeatTrainingHud', () => {
           }}
           onPauseToggle={onPauseToggle}
           onCameraModeChange={onCameraModeChange}
+          showRaycasts={false}
+          onShowRaycastsChange={onShowRaycastsChange}
           onRegenerateTrack={onRegenerateTrack}
           onReset={vi.fn()}
           onSelectRun={vi.fn()}
@@ -47,5 +50,9 @@ describe('NeatTrainingHud', () => {
     expect(
       screen.getByRole('region', { name: 'Telemetría NEAT' }),
     ).toHaveTextContent('Promedio')
+    const raycasts = screen.getByRole('checkbox', { name: 'Mostrar raycasts' })
+    expect(raycasts).not.toBeChecked()
+    await user.click(raycasts)
+    expect(onShowRaycastsChange).toHaveBeenCalledWith(true)
   })
 })

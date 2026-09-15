@@ -24,6 +24,8 @@ interface NeatTrainingHudProps {
   selectedCar?: number
   onSelectedCarChange?: (index: number) => void
   trackSeed?: number
+  showRaycasts?: boolean
+  onShowRaycastsChange?: (enabled: boolean) => void
 }
 const statusLabels: Record<TrainingStatus, string> = {
   idle: 'Preparado',
@@ -57,6 +59,8 @@ export function NeatTrainingHud({
   selectedCar = 0,
   onSelectedCarChange,
   trackSeed,
+  showRaycasts = false,
+  onShowRaycastsChange,
 }: NeatTrainingHudProps) {
   const [telemetry, setTelemetry] = useState(false)
   const [controls, setControls] = useState(false)
@@ -191,6 +195,12 @@ export function NeatTrainingHud({
       )}
       {telemetry && (
         <section className="telemetry-panel" aria-label="Telemetría NEAT">
+          <h3>Sensores de los autos</h3>
+          <label className="setting-toggle">
+            <input type="checkbox" checked={showRaycasts} onChange={(event) => onShowRaycastsChange?.(event.target.checked)} />
+            Mostrar raycasts
+          </label>
+          <p className="hud-hint">Cinco rayos por auto, hasta 8 m. Rojo: detecta un borde. Turquesa: libre; amarillo si es el auto observado. Pausa el entrenamiento para inspeccionarlos.</p>
           <h3>Generación anterior</h3>
           <dl>
             <dt>Mejor puntuación</dt>

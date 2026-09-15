@@ -67,6 +67,7 @@ export function NeatTrainingPage() {
     'overview',
   )
   const [selectedCar, setSelectedCar] = useState(0)
+  const [showRaycasts, setShowRaycasts] = useState(false)
   const [runId, setRunId] = useState(0)
   const [selectedRun, setSelectedRun] = useState<TrainingRun | null>(null)
   const [selectorBusy, setSelectorBusy] = useState(false)
@@ -366,6 +367,7 @@ export function NeatTrainingPage() {
             track={activeTrack}
             cameraMode={cameraMode}
             selectedGenomeId={genomes[selectedCar]?.id ?? genomes[0].id}
+            showRaycasts={showRaycasts}
           />
         </Suspense>
       </SceneCanvas>
@@ -389,6 +391,8 @@ export function NeatTrainingPage() {
           selectedCar={selectedCar}
           onSelectedCarChange={setSelectedCar}
           trackSeed={activeTrack.recipe.seed}
+          showRaycasts={showRaycasts}
+          onShowRaycastsChange={setShowRaycasts}
         />
       ) : (
         <TrainingRunSelector

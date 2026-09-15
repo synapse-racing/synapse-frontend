@@ -2,6 +2,7 @@ import { useFrame } from '@react-three/fiber'
 import { useRef } from 'react'
 import type { Group } from 'three'
 import { RaceCarModel } from '../../../shared/three/RaceCarModel.tsx'
+import { SensorRays } from './SensorRays.tsx'
 import type { CarPose } from '../../../shared/three/RaceCamera.tsx'
 import type { AgentRuntime } from '../domain/fitness.ts'
 import type { TrackDefinition } from '../domain/track.ts'
@@ -23,6 +24,7 @@ interface NeatVehicleProps {
   running: boolean
   track: TrackDefinition
   selected: boolean
+  showRaycasts: boolean
   onPose: (id: string, pose: CarPose) => void
 }
 
@@ -34,6 +36,7 @@ export function NeatVehicle({
   running,
   track,
   selected,
+  showRaycasts,
   onPose,
 }: NeatVehicleProps) {
   const meshRef = useRef<Group>(null)
@@ -73,22 +76,31 @@ export function NeatVehicle({
       meshRef.current.rotation.y = state.current.yaw
     }
     onPose(genome.id, state.current)
-  })
+  }, -1)
 
   const hue = (index * 47) % 360
   return (
-    <group
-      ref={meshRef}
-      position={[state.current.x, 0, state.current.z]}
-      rotation={[0, state.current.yaw, 0]}
-    >
-      <RaceCarModel
-        color={`hsl(${hue},72%,56%)`}
-        selected={selected}
-        getSpeed={() =>
-          finished.current || !running ? 0 : state.current.speed
-        }
-      />
-    </group>
+    <>
+      <group
+        ref={meshRef}
+        position={[state.current.x, 0, state.current.z]}
+        rotation={[0, state.current.yaw, 0]}
+      >
+        <RaceCarModel
+          color={`hsl(${hue},72%,56%)`}
+          selected={selected}
+          getSpeed={() =>
+            finished.current || !running ? 0 : state.current.speed
+          }
+        />
+      </group>
+      {showRaycasts && (
+        <SensorRays
+          getState={() => state.current}
+          track={track}
+          selected={selected}
+        />
+      )}
+    </>
   )
 }
