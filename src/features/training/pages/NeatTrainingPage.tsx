@@ -17,6 +17,7 @@ import {
   type PersistenceStatus,
   type TrainingStatus,
 } from '../components/NeatTrainingHud.tsx'
+import type { SimulationSpeed } from '../../../shared/game/SimulationSpeedControl.tsx'
 import { NeatTrainingScene } from '../components/NeatTrainingScene.tsx'
 import { TrainingRunSelector } from '../components/TrainingRunSelector.tsx'
 import { calculateFitness, type AgentRuntime } from '../domain/fitness.ts'
@@ -67,6 +68,7 @@ export function NeatTrainingPage() {
     'overview',
   )
   const [selectedCar, setSelectedCar] = useState(0)
+  const [timeScale, setTimeScale] = useState<SimulationSpeed>(1)
   const [showRaycasts, setShowRaycasts] = useState(false)
   const [runId, setRunId] = useState(0)
   const [selectedRun, setSelectedRun] = useState<TrainingRun | null>(null)
@@ -364,6 +366,7 @@ export function NeatTrainingPage() {
             onAgentFinish={handleAgentFinish}
             onCheckpoint={handleCheckpoint}
             running={running}
+            timeScale={timeScale}
             track={activeTrack}
             cameraMode={cameraMode}
             selectedGenomeId={genomes[selectedCar]?.id ?? genomes[0].id}
@@ -374,6 +377,8 @@ export function NeatTrainingPage() {
       {selectedRun ? (
         <NeatTrainingHud
           alive={alive}
+          timeScale={timeScale}
+          onTimeScaleChange={setTimeScale}
           currentBest={currentBest}
           generation={engine.generation}
           metrics={metrics}

@@ -27,6 +27,7 @@ vi.mock('../components/MultiplayerRace.tsx', () => ({
 
 it('returns from results to the existing lobby without leaving the room', async () => {
   const room: RoomState = {
+    timeScale: 1,
     code: 'ABC123', hostUserId: 'host', status: 'RACING', maxPlayers: 2,
     track: { version: 'curved-loop-v1', seed: 99 },
     players: [{ userId: 'host', username: 'Host', ready: false, genomeName: 'Pilot' }],

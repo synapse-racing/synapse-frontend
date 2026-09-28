@@ -11,6 +11,7 @@ interface NeatTrainingSceneProps {
   genomes: Genome[]
   onAgentFinish: (genomeId: string, runtime: AgentRuntime) => void
   onCheckpoint: (index: number, rigidBodyName: string) => void
+  timeScale: number
   running: boolean
   track: TrackDefinition
   cameraMode: 'overview' | 'follow'
@@ -23,6 +24,7 @@ export function NeatTrainingScene({
   genomes,
   onAgentFinish,
   onCheckpoint,
+  timeScale,
   running,
   track,
   cameraMode,
@@ -41,6 +43,7 @@ export function NeatTrainingScene({
           onFinish={onAgentFinish}
           onCheckpoint={onCheckpoint}
           running={running}
+          timeScale={timeScale}
           track={track}
           selected={genome.id === selectedGenomeId}
           showRaycasts={showRaycasts}

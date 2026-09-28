@@ -21,6 +21,7 @@ interface NeatVehicleProps {
   index: number
   onFinish: (genomeId: string, runtime: AgentRuntime) => void
   onCheckpoint: (index: number, rigidBodyName: string) => void
+  timeScale: number
   running: boolean
   track: TrackDefinition
   selected: boolean
@@ -33,6 +34,7 @@ export function NeatVehicle({
   index,
   onFinish,
   onCheckpoint,
+  timeScale,
   running,
   track,
   selected,
@@ -46,7 +48,7 @@ export function NeatVehicle({
 
   useFrame((_, frameDelta) => {
     if (!running || finished.current) return
-    accumulator.current += Math.min(frameDelta, 0.25)
+    accumulator.current += Math.min(frameDelta, 0.25) * timeScale
     while (accumulator.current >= simulationStepSeconds && !finished.current) {
       const simulation = state.current
       const [steering, throttle] = evaluateGenome(genome, [

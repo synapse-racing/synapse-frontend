@@ -3,6 +3,7 @@ import { SnapshotTimeline } from '../domain/snapshotTimeline.ts'
 import { SceneCanvas } from '../../../shared/three/SceneCanvas.tsx'
 import { TrackEnvironment } from '../../../shared/three/TrackEnvironment.tsx'
 import { RaceCamera, type CarPose } from '../../../shared/three/RaceCamera.tsx'
+import { SimulationSpeedControl, type SimulationSpeed } from '../../../shared/game/SimulationSpeedControl.tsx'
 import { GameSettings } from '../../../shared/game/GameSettings.tsx'
 import { generateTrack } from '../../training/domain/track.ts'
 import type {
@@ -13,6 +14,9 @@ import type {
 import { RemoteRaceCar } from './RemoteRaceCar.tsx'
 
 interface MultiplayerRaceProps {
+  onTimeScaleChange: (speed: SimulationSpeed) => void
+  controlsDisabled: boolean
+  error: string | null
   currentUserId: string
   onLeave: () => void
   onReturnToRoom: () => void
@@ -22,6 +26,9 @@ interface MultiplayerRaceProps {
 }
 
 export function MultiplayerRace({
+  onTimeScaleChange,
+  controlsDisabled,
+  error,
   currentUserId,
   onLeave,
   onReturnToRoom,
@@ -102,6 +109,12 @@ export function MultiplayerRace({
           ))}
         </div>
         <div className="race-camera">
+          <SimulationSpeedControl
+            speed={room.timeScale ?? 1}
+            onChange={room.hostUserId === currentUserId ? onTimeScaleChange : undefined}
+            disabled={controlsDisabled || snapshot.status === 'FINISHED'}
+          />
+          {error && <span role="alert">{error}</span>}
           <button
             onClick={() =>
               setCameraMode(cameraMode === 'overview' ? 'follow' : 'overview')
