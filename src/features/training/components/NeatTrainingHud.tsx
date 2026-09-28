@@ -1,11 +1,14 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import type { GenerationMetrics } from '../neat/population.ts'
+import { SimulationSpeedControl, type SimulationSpeed } from '../../../shared/game/SimulationSpeedControl.tsx'
 import { GameSettings } from '../../../shared/game/GameSettings.tsx'
 
 export type TrainingStatus = 'idle' | 'running' | 'paused' | 'evolving'
 export type PersistenceStatus = 'idle' | 'saving' | 'saved' | 'error'
 interface NeatTrainingHudProps {
+  timeScale?: SimulationSpeed
+  onTimeScaleChange?: (speed: SimulationSpeed) => void
   alive: number
   currentBest: number
   generation: number
@@ -41,6 +44,8 @@ const saveLabels: Record<PersistenceStatus, string> = {
 }
 
 export function NeatTrainingHud({
+  timeScale = 1,
+  onTimeScaleChange,
   alive,
   currentBest,
   generation,
@@ -91,6 +96,7 @@ export function NeatTrainingHud({
           </span>
         </div>
         <div className="neat-hud__actions">
+          <SimulationSpeedControl speed={timeScale} onChange={onTimeScaleChange} />
           {onCameraModeChange && (
             <button
               onClick={() =>

@@ -1,5 +1,7 @@
 import type { TrackRecipe } from '../../training/domain/track.ts'
 
+import type { SimulationSpeed } from '../../../shared/game/SimulationSpeedControl.tsx'
+
 export type RoomStatus = 'LOBBY' | 'COUNTDOWN' | 'RACING' | 'FINISHED'
 
 export interface RoomPlayer {
@@ -12,6 +14,7 @@ export interface RoomPlayer {
 export interface RoomState {
   code: string
   hostUserId: string
+  timeScale: SimulationSpeed
   status: RoomStatus
   maxPlayers: number
   track: TrackRecipe
@@ -75,5 +78,6 @@ export interface ClientToServerEvents {
   'player:ready': (input: { ready: boolean }) => void
   'player:select-genome': (input: { trainingRunId: string }) => void
   'room:select-track': (input: { track: TrackRecipe }) => void
+  'race:set-speed': (input: { timeScale: SimulationSpeed }) => void
   'race:start': () => void
 }

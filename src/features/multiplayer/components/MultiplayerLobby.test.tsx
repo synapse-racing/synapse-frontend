@@ -7,6 +7,7 @@ import { MultiplayerLobby } from './MultiplayerLobby.tsx'
 const room: RoomState = {
   code: 'ABC123',
   hostUserId: 'host',
+  timeScale: 1,
   status: 'LOBBY',
   maxPlayers: 4,
   track: { version: 'rectangular-ring-v1', seed: 42_170 },

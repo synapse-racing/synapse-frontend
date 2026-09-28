@@ -101,6 +101,9 @@ export function MultiplayerPage() {
       {racing && snapshot ? (
         <MultiplayerRace
           currentUserId={currentUserId}
+          controlsDisabled={connection !== 'connected'}
+          error={error}
+          onTimeScaleChange={(timeScale) => socketRef.current?.emit('race:set-speed', { timeScale })}
           onLeave={leaveRoom}
           onReturnToRoom={() => {
             setResult(null)
