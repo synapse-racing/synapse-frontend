@@ -18,6 +18,30 @@ const room: RoomState = {
 }
 
 describe('MultiplayerLobby', () => {
+  it('accepts typed capacities from 2 to 64 and blocks empty, fractional and out-of-range values', async () => {
+    const onCreate = vi.fn()
+    const user = userEvent.setup()
+    render(<MultiplayerLobby busy={false} currentUserId="host" error={null}
+      onCreate={onCreate} onJoin={vi.fn()} onLeave={vi.fn()} onReady={vi.fn()}
+      onSelectGenome={vi.fn()} onSelectTrack={vi.fn()} onStart={vi.fn()}
+      room={null} trainingRuns={[]} />)
+    const input = screen.getByRole('spinbutton', { name: 'Capacidad' })
+    const create = screen.getByRole('button', { name: 'Crear codigo' })
+    for (const value of ['', '1', '65', '2.5', '-2']) {
+      await user.clear(input)
+      if (value) await user.type(input, value)
+      expect(create).toBeDisabled()
+      await user.click(create)
+    }
+    expect(onCreate).not.toHaveBeenCalled()
+    for (const value of ['2', '17', '64']) {
+      await user.clear(input)
+      await user.type(input, value)
+      expect(create).toBeEnabled()
+      await user.click(create)
+      expect(onCreate).toHaveBeenLastCalledWith(Number(value))
+    }
+  })
   it('shows players and toggles current player ready state', async () => {
     const onReady = vi.fn()
     const user = userEvent.setup()

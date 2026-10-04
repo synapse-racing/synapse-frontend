@@ -34,7 +34,9 @@ export function MultiplayerLobby({
   trainingRuns,
 }: MultiplayerLobbyProps) {
   const [code, setCode] = useState('')
-  const [maxPlayers, setMaxPlayers] = useState(4)
+  const [maxPlayers, setMaxPlayers] = useState('4')
+  const capacity = Number(maxPlayers)
+  const validCapacity = /^\d+$/.test(maxPlayers) && Number.isInteger(capacity) && capacity >= 2 && capacity <= 64
   const [trackSeed, setTrackSeed] = useState(0)
   const roomTrackSeed = room?.track.seed
 
@@ -63,16 +65,20 @@ export function MultiplayerLobby({
             <h2>Crear sala</h2>
             <label>
               Capacidad
-              <select
+              <input
+                type="number"
+                min={2}
+                max={64}
+                step={1}
+                required
+                aria-invalid={!validCapacity}
+                aria-describedby="capacity-hint"
                 value={maxPlayers}
-                onChange={(event) => setMaxPlayers(Number(event.target.value))}
-              >
-                <option value={2}>2 pilotos</option>
-                <option value={3}>3 pilotos</option>
-                <option value={4}>4 pilotos</option>
-              </select>
+                onChange={(event) => setMaxPlayers(event.target.value)}
+              />
             </label>
-            <button disabled={busy} onClick={() => onCreate(maxPlayers)}>
+            <p id="capacity-hint">Escribe un número entero entre 2 y 64 pilotos.</p>
+            <button disabled={busy || !validCapacity} onClick={() => { if (validCapacity) onCreate(capacity) }}>
               Crear codigo
             </button>
           </div>
