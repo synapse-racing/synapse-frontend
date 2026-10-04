@@ -1,3 +1,5 @@
+import { crossesCheckpoint } from './checkpoint-crossing.ts'
+
 export const simulationStepSeconds = 1 / 20
 export const simulationMaxSeconds = 28
 export const raceTimeLimit = (track: TrackDefinition) => (track.recipe.version === 'technical-loop-v2' || track.recipe.version === 'grand-prix-v3') ? 180 : simulationMaxSeconds
@@ -53,6 +55,9 @@ export function stepSimulation(
   throttle: number,
   track: TrackDefinition = prototypeTrack,
 ): SimulationStep {
+  if (state.laps >= 1 || state.collided || state.elapsedSteps * simulationStepSeconds >= raceTimeLimit(track) || state.stationarySteps * simulationStepSeconds >= 3) {
+    return { checkpointEntries: [], collision: state.collided, stalled: state.stationarySteps * simulationStepSeconds >= 3, finished: true }
+  }
   state.speed += Math.max(-1, Math.min(1, throttle)) * 8.5 * simulationStepSeconds
   state.speed *= Math.pow(0.985, simulationStepSeconds * 60)
   state.speed = Math.max(-4.5, Math.min(12, state.speed))
@@ -91,7 +96,10 @@ export function stepSimulation(
     const localZ = sine * dx + cosine * dz
     const inside =
       Math.abs(localX) <= width / 2 && Math.abs(localZ) <= depth / 2
-    if (inside && !state.insideCheckpoints[index] && index === state.expectedCheckpoint) {
+    const crossed = crossesCheckpoint(previousX, previousZ, state.x, state.z,
+      checkpointX, checkpointZ, checkpoint.rotationY,
+      track.geometry.kind === 'rectangular-ring' ? width / 2 : Math.max(width / 2, track.geometry.driveHalfWidth), depth / 2)
+    if (!collision && crossed && !state.insideCheckpoints[index] && index === state.expectedCheckpoint) {
       checkpointEntries.push(index)
       state.passedCheckpoints += 1
       if (index === track.checkpoints.length - 1) {

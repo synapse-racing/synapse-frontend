@@ -178,7 +178,7 @@ function generateCurvedTrack(recipe: TrackRecipe): TrackDefinition {
       index,
       position: [point[0], 0.35, point[1]] as Vector3Tuple,
       rotationY: Math.atan2(-normalZ, normalX),
-      size: [driveHalfWidth * 2 - 0.5, 0.7, 1] as Vector3Tuple,
+      size: [driveHalfWidth * 2, 0.7, 1] as Vector3Tuple,
     }
   })
   const spawnAngle = technical ? 0 : Math.PI - 0.35
