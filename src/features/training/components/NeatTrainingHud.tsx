@@ -19,6 +19,7 @@ interface NeatTrainingHudProps {
   onSelectRun: () => void
   onStart: () => void
   persistenceStatus: PersistenceStatus
+  onRetrySave?: () => void
   populationSize: number
   status: TrainingStatus
   trainingName: string
@@ -56,6 +57,7 @@ export function NeatTrainingHud({
   onSelectRun,
   onStart,
   persistenceStatus,
+  onRetrySave,
   populationSize,
   status,
   trainingName,
@@ -152,13 +154,19 @@ export function NeatTrainingHud({
             <button
               className="primary-button"
               onClick={onPauseToggle}
-              disabled={status === 'evolving'}
+              disabled={status === 'evolving' || persistenceStatus === 'saving'}
             >
               {status === 'paused' ? 'Reanudar' : 'Pausar'}
             </button>
           )}
         </div>
       </header>
+      {persistenceStatus === 'error' && onRetrySave && (
+        <section className="telemetry-panel" role="alert">
+          <p>No se pudo guardar la generación. El entrenamiento está pausado para conservarla.</p>
+          <button onClick={onRetrySave}>Reintentar guardado</button>
+        </section>
+      )}
       <section className="neat-hud__summary">
         <p className="eyebrow">
           {trainingName} / Desierto {trackSeed !== undefined && `#${trackSeed}`}
