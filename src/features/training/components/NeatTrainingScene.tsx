@@ -5,11 +5,21 @@ import type { Genome } from '../neat/genes.ts'
 import { NeatVehicle } from './NeatVehicle.tsx'
 import { TrackEnvironment } from '../../../shared/three/TrackEnvironment.tsx'
 import { RaceCamera, type CarPose } from '../../../shared/three/RaceCamera.tsx'
+import type {
+  AgentFinishReason,
+  RegisterAgentControl,
+} from '../domain/agent-control.ts'
 
 interface NeatTrainingSceneProps {
   generationKey: string
   genomes: Genome[]
-  onAgentFinish: (genomeId: string, runtime: AgentRuntime) => void
+  onAgentFinish: (
+    genomeId: string,
+    runtime: AgentRuntime,
+    reason?: AgentFinishReason,
+  ) => void
+  onInspectCar: (genomeId: string) => void
+  onRegisterCar: RegisterAgentControl
   onCheckpoint: (index: number, rigidBodyName: string) => void
   timeScale: number
   running: boolean
@@ -30,6 +40,8 @@ export function NeatTrainingScene({
   cameraMode,
   selectedGenomeId,
   showRaycasts,
+  onInspectCar,
+  onRegisterCar,
 }: NeatTrainingSceneProps) {
   const poses = useRef(new Map<string, CarPose>())
   return (
@@ -41,6 +53,8 @@ export function NeatTrainingScene({
           genome={genome}
           index={index}
           onFinish={onAgentFinish}
+          onInspect={onInspectCar}
+          onRegister={onRegisterCar}
           onCheckpoint={onCheckpoint}
           running={running}
           timeScale={timeScale}
@@ -51,7 +65,7 @@ export function NeatTrainingScene({
         />
       ))}
       <RaceCamera
-          extent={Math.max(...track.groundSize)}
+        extent={Math.max(...track.groundSize)}
         mode={cameraMode}
         getTarget={() =>
           poses.current.get(selectedGenomeId) ?? {

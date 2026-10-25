@@ -3,8 +3,12 @@ import { SnapshotTimeline } from '../domain/snapshotTimeline.ts'
 import { SceneCanvas } from '../../../shared/three/SceneCanvas.tsx'
 import { TrackEnvironment } from '../../../shared/three/TrackEnvironment.tsx'
 import { RaceCamera, type CarPose } from '../../../shared/three/RaceCamera.tsx'
-import { SimulationSpeedControl, type SimulationSpeed } from '../../../shared/game/SimulationSpeedControl.tsx'
+import {
+  SimulationSpeedControl,
+  type SimulationSpeed,
+} from '../../../shared/game/SimulationSpeedControl.tsx'
 import { GameSettings } from '../../../shared/game/GameSettings.tsx'
+import { CarActions } from '../../../shared/game/CarActions.tsx'
 import { generateTrack } from '../../training/domain/track.ts'
 import type {
   RaceResult,
@@ -15,6 +19,7 @@ import { RemoteRaceCar } from './RemoteRaceCar.tsx'
 
 interface MultiplayerRaceProps {
   onTimeScaleChange: (speed: SimulationSpeed) => void
+  onEliminateCar: (userId: string, startAt: number) => void
   controlsDisabled: boolean
   error: string | null
   currentUserId: string
@@ -27,6 +32,7 @@ interface MultiplayerRaceProps {
 
 export function MultiplayerRace({
   onTimeScaleChange,
+  onEliminateCar,
   controlsDisabled,
   error,
   currentUserId,
@@ -40,6 +46,10 @@ export function MultiplayerRace({
     'overview',
   )
   const [observedId, setObservedId] = useState(currentUserId)
+  const [inspectedCar, setInspectedCar] = useState<{
+    id: string
+    startAt: number
+  } | null>(null)
   const poses = useRef(new Map<string, CarPose>())
   const [timeline] = useState(() => new SnapshotTimeline())
   useLayoutEffect(() => {
@@ -48,6 +58,16 @@ export function MultiplayerRace({
   const currentPlayer = snapshot.players.find(
     (player) => player.userId === currentUserId,
   )
+  const inspected =
+    inspectedCar?.startAt === snapshot.startAt
+      ? snapshot.players.find((p) => p.userId === inspectedCar.id)
+      : undefined
+  const host = room.hostUserId === currentUserId
+  function selectCar(id: string) {
+    setObservedId(id)
+    setCameraMode('follow')
+    setInspectedCar({ id, startAt: snapshot.startAt })
+  }
   const countdown = Math.max(
     0,
     Math.ceil((snapshot.startAt - snapshot.serverTime) / 1000),
@@ -65,6 +85,8 @@ export function MultiplayerRace({
             isCurrentUser={player.userId === currentUserId}
             player={player}
             timeline={timeline}
+            selected={observedId === player.userId}
+            onSelect={selectCar}
             onPose={(id, pose) => poses.current.set(id, pose)}
           />
         ))}
@@ -93,9 +115,13 @@ export function MultiplayerRace({
               key={player.userId}
               className={player.userId === currentUserId ? 'is-current' : ''}
             >
-              <span>
+              <button
+                className="race-standings__select"
+                aria-label={`Seguir a ${player.username}`}
+                onClick={() => selectCar(player.userId)}
+              >
                 {player.rank}. {player.username}
-              </span>
+              </button>
               <span>
                 {player.disconnected
                   ? 'DESC.'
@@ -111,7 +137,9 @@ export function MultiplayerRace({
         <div className="race-camera">
           <SimulationSpeedControl
             speed={room.timeScale ?? 1}
-            onChange={room.hostUserId === currentUserId ? onTimeScaleChange : undefined}
+            onChange={
+              room.hostUserId === currentUserId ? onTimeScaleChange : undefined
+            }
             disabled={controlsDisabled || snapshot.status === 'FINISHED'}
           />
           {error && <span role="alert">{error}</span>}
@@ -127,8 +155,7 @@ export function MultiplayerRace({
             <select
               value={observedId}
               onChange={(event) => {
-                setObservedId(event.target.value)
-                setCameraMode('follow')
+                selectCar(event.target.value)
               }}
             >
               {snapshot.players.map((player) => (
@@ -160,6 +187,42 @@ export function MultiplayerRace({
         )}
       </div>
 
+      {inspected && !result && (
+        <CarActions
+          name={inspected.username}
+          status={
+            inspected.disconnected
+              ? 'Desconectado'
+              : inspected.eliminated
+                ? inspected.eliminationReason === 'HOST'
+                  ? 'Eliminado por el anfitrión'
+                  : 'Eliminado'
+                : inspected.finishedAt !== null
+                  ? 'Meta'
+                  : snapshot.status === 'COUNTDOWN'
+                    ? 'En parrilla'
+                    : 'En pista'
+          }
+          onFollow={() => {
+            setObservedId(inspected.userId)
+            setCameraMode('follow')
+          }}
+          onEliminate={
+            host
+              ? () => onEliminateCar(inspected.userId, snapshot.startAt)
+              : undefined
+          }
+          canEliminate={
+            !controlsDisabled &&
+            snapshot.status === 'RACING' &&
+            !inspected.eliminated &&
+            !inspected.disconnected &&
+            inspected.finishedAt === null
+          }
+          onClose={() => setInspectedCar(null)}
+        />
+      )}
+
       {result && (
         <div className="race-results">
           <div>
@@ -174,9 +237,11 @@ export function MultiplayerRace({
                     {player.disconnected
                       ? 'Desconectado'
                       : player.eliminated
-                        ? player.eliminationReason === 'STALLED'
-                          ? 'Eliminado por inactividad'
-                          : 'Eliminado por colision'
+                        ? player.eliminationReason === 'HOST'
+                          ? 'Eliminado por el anfitrión'
+                          : player.eliminationReason === 'STALLED'
+                            ? 'Eliminado por inactividad'
+                            : 'Eliminado por colision'
                         : player.finishedAt
                           ? 'Finalizo'
                           : `${player.passedCheckpoints}/${track.checkpoints.length} checkpoints`}
