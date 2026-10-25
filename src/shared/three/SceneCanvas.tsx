@@ -1,16 +1,16 @@
 import { Component, Suspense } from 'react'
-import type { PropsWithChildren } from 'react'
+import type { PropsWithChildren, ReactNode } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { PCFShadowMap } from 'three'
 import { useGamePreferences } from '../game/preferences.ts'
-class SceneBoundary extends Component<PropsWithChildren, { failed: boolean }> {
+class SceneBoundary extends Component<PropsWithChildren<{ fallback?: ReactNode }>, { failed: boolean }> {
   state = { failed: false }
   static getDerivedStateFromError() {
     return { failed: true }
   }
   render() {
     return this.state.failed ? (
-      <div className="scene-fallback" role="status">
+      this.props.fallback ?? <div className="scene-fallback" role="status">
         La vista 3D no está disponible. Activa la aceleración gráfica y recarga.
       </div>
     ) : (
@@ -21,11 +21,14 @@ class SceneBoundary extends Component<PropsWithChildren, { failed: boolean }> {
 export function SceneCanvas({
   children,
   garage = false,
-}: PropsWithChildren<{ garage?: boolean }>) {
+  frameloop = 'always',
+  fallback,
+}: PropsWithChildren<{ garage?: boolean; frameloop?: 'always' | 'demand'; fallback?: ReactNode }>) {
   const { preferences } = useGamePreferences()
   return (
-    <SceneBoundary>
+    <SceneBoundary fallback={fallback}>
       <Canvas
+        frameloop={frameloop}
         shadows={
           preferences.quality === 'high' ? { type: PCFShadowMap } : false
         }
@@ -40,7 +43,7 @@ export function SceneCanvas({
           powerPreference: 'high-performance',
         }}
         fallback={
-          <div className="scene-fallback">
+          fallback ?? <div className="scene-fallback">
             Activa la aceleración gráfica para ver el escenario.
           </div>
         }

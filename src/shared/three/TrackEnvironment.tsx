@@ -136,9 +136,11 @@ function SectorGate({
 export function TrackEnvironment({
   track,
   theme,
+  cinematic = false,
 }: {
   track: TrackDefinition
   theme: TrackTheme
+  cinematic?: boolean
 }) {
   const { preferences } = useGamePreferences()
   const high = preferences.quality === 'high',
@@ -163,7 +165,7 @@ export function TrackEnvironment({
   const radius = Math.hypot(extent.x, extent.z) + 22
   return (
     <>
-      <color attach="background" args={[desert ? '#d4b78c' : '#a8c3cf']} />
+      <color attach="background" args={[cinematic ? '#d4c2a7' : desert ? '#d4b78c' : '#a8c3cf']} />
       <fog attach="fog" args={[desert ? '#d4b78c' : '#a8c3cf', Math.max(75, radius * 2), Math.max(230, radius * 5)]} />
       <hemisphereLight
         args={[
@@ -174,9 +176,9 @@ export function TrackEnvironment({
       />
       <directionalLight
         position={[-30, 45, 15]}
-        intensity={desert ? 2.8 : 2.3}
+        intensity={cinematic ? 0.6 : desert ? 2.8 : 2.3}
         color={desert ? '#ffe0ac' : '#fff5dc'}
-        castShadow={high}
+        castShadow={high && !cinematic}
         shadow-mapSize={[2048, 2048]}
         shadow-camera-left={-60}
         shadow-camera-right={60}
