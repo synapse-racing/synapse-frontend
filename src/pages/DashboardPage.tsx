@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom'
 import { useAuth } from '../features/auth/context/useAuth.ts'
 import { useMenuStage } from '../shared/game/menu-stage-context.ts'
 import { GameSettings } from '../shared/game/GameSettings.tsx'
+import { GuestProgressImport } from '../features/training/components/GuestProgressImport.tsx'
+import { requestGuestImport } from '../features/training/persistence/import-guest-training.ts'
 import {
   playMenuSound,
   useGamePreferences,
@@ -10,6 +12,7 @@ import {
 
 export function DashboardPage() {
   const auth = useAuth()
+  const guest = auth.status === 'visitor'
   const { preview } = useMenuStage()
   const menu = useRef<HTMLElement>(null)
   const { preferences } = useGamePreferences()
@@ -22,12 +25,31 @@ export function DashboardPage() {
         <div className="header-actions">
           <GameSettings />
           <button className="text-button" onClick={() => void auth.logout()}>
-            Cerrar sesión
+            {guest ? 'Salir del modo invitado' : 'Cerrar sesión'}
           </button>
         </div>
       </header>
       <section className="paddock-content">
-        <p className="eyebrow">Paddock / {auth.user?.username}</p>
+        <p className="eyebrow">
+          Paddock / {guest ? 'Piloto invitado' : auth.user?.username}
+        </p>
+        {guest ? (
+          <section className="guest-progress" aria-label="Modo invitado">
+            <p>Tu progreso se guarda en este dispositivo.</p>
+            <Link
+              className="guest-save-link"
+              to="/register"
+              onClick={requestGuestImport}
+            >
+              Crear cuenta y guardar progreso ↗
+            </Link>
+            <Link to="/login" onClick={requestGuestImport}>
+              Ya tengo cuenta
+            </Link>
+          </section>
+        ) : (
+          <GuestProgressImport />
+        )}
         <h1>
           A LA
           <br />
@@ -72,7 +94,11 @@ export function DashboardPage() {
             <span className="menu-index">02</span>
             <div>
               <h2>MULTIJUGADOR</h2>
-              <p>Lleva a tu mejor piloto al torneo.</p>
+              <p>
+                {guest
+                  ? 'Requiere cuenta · Guarda tu piloto y compite.'
+                  : 'Lleva a tu mejor piloto al torneo.'}
+              </p>
             </div>
             <span className="menu-arrow">↗</span>
           </Link>

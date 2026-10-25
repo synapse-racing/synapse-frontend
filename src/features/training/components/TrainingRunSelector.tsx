@@ -11,6 +11,7 @@ interface TrainingRunSelectorProps {
   onDelete: (trainingRun: TrainingRun) => Promise<void>
   onLoad: (trainingRun: TrainingRun) => Promise<void>
   runs: TrainingRun[]
+  localOnly?: boolean
 }
 
 export function TrainingRunSelector({
@@ -20,6 +21,7 @@ export function TrainingRunSelector({
   onDelete,
   onLoad,
   runs,
+  localOnly = false,
 }: TrainingRunSelectorProps) {
   const [name, setName] = useState('Entrenamiento NEAT')
   const [seed, setSeed] = useState(() =>
@@ -44,6 +46,12 @@ export function TrainingRunSelector({
           Genera un circuito reproducible, lanza una nueva temporada o recupera
           una partida guardada.
         </p>
+        {localOnly && (
+          <p className="guest-training-note">
+            Modo invitado · Guardado en este navegador. Crea una cuenta desde el
+            Paddock para llevar tu progreso a otros dispositivos.
+          </p>
+        )}
 
         <form
           className="run-selector__create run-setup"
@@ -69,7 +77,8 @@ export function TrainingRunSelector({
               }}
             />
             <small>
-              Rectas, horquillas y chicanes · 16 sectores · reproducible por semilla
+              Rectas, horquillas y chicanes · 16 sectores · reproducible por
+              semilla
             </small>
           </div>
           <label>

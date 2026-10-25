@@ -10,13 +10,15 @@ export function TitlePage() {
   const auth = useAuth(),
     navigate = useNavigate()
   const { preferences } = useGamePreferences()
-  const destination = auth.status === 'authenticated' ? '/dashboard' : '/login'
+  const destination =
+    auth.status === 'authenticated' || auth.status === 'visitor'
+      ? '/dashboard'
+      : '/login'
   useEffect(() => {
     const enter = (event: KeyboardEvent) => {
       if (
         event.key !== 'Enter' ||
         event.repeat ||
-        auth.status === 'loading' ||
         document.querySelector('dialog[open]')
       )
         return
@@ -50,16 +52,13 @@ export function TitlePage() {
         </p>
         <button
           className="enter-button"
-          disabled={auth.status === 'loading'}
           onClick={() => {
             playMenuSound(preferences.sound)
             navigate(destination)
           }}
         >
           <kbd>ENTER</kbd>
-          {auth.status === 'loading'
-            ? 'Preparando el paddock…'
-            : 'Presiona Enter para continuar'}
+          Presiona Enter para continuar
           <span aria-hidden="true">↗</span>
         </button>
       </div>
