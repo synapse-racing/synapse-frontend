@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { PropsWithChildren } from 'react'
 import * as authApi from '../api/auth.api.ts'
 import type {
@@ -11,19 +11,31 @@ import type {
 import { AuthContext } from './auth-context.ts'
 
 export function AuthProvider({ children }: PropsWithChildren) {
-  const [status, setStatus] = useState<AuthStatus>('loading')
+  const [status, setStatus] = useState<AuthStatus>(() => {
+    try {
+      return localStorage.getItem('synapse-visitor') === 'true'
+        ? 'visitor'
+        : 'loading'
+    } catch {
+      return 'loading'
+    }
+  })
+  const sessionVersion = useRef(0)
+  const startedAsVisitor = useRef(status === 'visitor')
   const [accessToken, setAccessToken] = useState<string | null>(null)
   const [user, setUser] = useState<User | null>(null)
 
   useEffect(() => {
+    if (startedAsVisitor.current) return
     let active = true
+    const version = sessionVersion.current
 
     authApi.refreshSession().then(
       (session) => {
-        if (active) applySession(session)
+        if (active && version === sessionVersion.current) applySession(session)
       },
       () => {
-        if (active) clearSession()
+        if (active && version === sessionVersion.current) clearSession()
       },
     )
 
@@ -33,12 +45,24 @@ export function AuthProvider({ children }: PropsWithChildren) {
   }, [])
 
   function applySession(session: AuthResponse) {
+    sessionVersion.current += 1
+    try {
+      localStorage.removeItem('synapse-visitor')
+    } catch {
+      /* Optional preference. */
+    }
     setAccessToken(session.accessToken)
     setUser(session.user)
     setStatus('authenticated')
   }
 
   function clearSession() {
+    sessionVersion.current += 1
+    try {
+      localStorage.removeItem('synapse-visitor')
+    } catch {
+      /* Optional preference. */
+    }
     setAccessToken(null)
     setUser(null)
     setStatus('guest')
@@ -53,8 +77,21 @@ export function AuthProvider({ children }: PropsWithChildren) {
   }
 
   async function logout() {
+    const authenticated = status === 'authenticated'
     clearSession()
-    await authApi.logout().catch(() => undefined)
+    if (authenticated) await authApi.logout().catch(() => undefined)
+  }
+
+  function continueAsGuest() {
+    sessionVersion.current += 1
+    try {
+      localStorage.setItem('synapse-visitor', 'true')
+    } catch {
+      /* IndexedDB reports any save failures separately. */
+    }
+    setAccessToken(null)
+    setUser(null)
+    setStatus('visitor')
   }
 
   async function renewSession() {
@@ -73,6 +110,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
         register,
         logout,
         renewSession,
+        continueAsGuest,
       }}
     >
       {children}

@@ -20,4 +20,4 @@ export interface RegisterInput extends LoginInput {
   username: string
 }
 
-export type AuthStatus = 'loading' | 'authenticated' | 'guest'
+export type AuthStatus = 'loading' | 'authenticated' | 'guest' | 'visitor'

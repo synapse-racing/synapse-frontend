@@ -11,6 +11,7 @@ import {
 import { ApiError } from '../../../shared/api/http.ts'
 import { useAuth } from '../../auth/context/useAuth.ts'
 import * as trainingApi from '../api/training.api.ts'
+import * as guestTraining from '../persistence/guest-training.ts'
 import type { SaveCheckpointInput, TrainingRun } from '../api/training.api.ts'
 import {
   NeatTrainingHud,
@@ -58,6 +59,11 @@ function createInitialMetrics(engine: NeatPopulation): GenerationMetrics {
 export function NeatTrainingPage() {
   const auth = useAuth()
   const queryClient = useQueryClient()
+  const isGuest = auth.status === 'visitor'
+  const runsKey = [
+    'training-runs',
+    isGuest ? 'guest' : (auth.user?.id ?? 'account'),
+  ]
   const [engine, setEngine] = useState(() => new NeatPopulation(trainingSeed))
   const [genomes, setGenomes] = useState(() => [...engine.genomes])
   const [status, setStatus] = useState<TrainingStatus>('idle')
@@ -78,16 +84,25 @@ export function NeatTrainingPage() {
     useState<PersistenceStatus>('idle')
   const recordsRef = useRef(createEvaluationRecords(engine.genomes))
   const fitnessRef = useRef(new Map<string, number>())
-  const pendingSave = useRef<{ run: TrainingRun; input: SaveCheckpointInput } | null>(null)
+  const pendingSave = useRef<{
+    run: TrainingRun
+    input: SaveCheckpointInput
+  } | null>(null)
   const saveInFlight = useRef(false)
   const activeRunId = useRef<string | null>(null)
-  useEffect(() => () => { activeRunId.current = null }, [])
+  useEffect(
+    () => () => {
+      activeRunId.current = null
+    },
+    [],
+  )
   const generationStartedAt = useRef(performance.now())
 
   const runsQuery = useQuery({
-    queryKey: ['training-runs'],
-    enabled: Boolean(auth.accessToken),
+    queryKey: runsKey,
+    enabled: isGuest || Boolean(auth.accessToken),
     queryFn: () => {
+      if (isGuest) return guestTraining.listGuestRuns()
       if (!auth.accessToken) throw new Error('Authentication required')
       return trainingApi.listTrainingRuns(auth.accessToken)
     },
@@ -129,7 +144,9 @@ export function NeatTrainingPage() {
     setCurrentBest(0)
     setRunId((value) => value + 1)
     setSelectedRun(run)
-    setPersistenceStatus(run.currentGeneration > 0 ? 'saved' : 'idle')
+    setPersistenceStatus(
+      isGuest || run.currentGeneration > 0 ? 'saved' : 'idle',
+    )
     recordsRef.current = createEvaluationRecords(nextEngine.genomes)
     fitnessRef.current = new Map()
     generationStartedAt.current = performance.now()
@@ -142,13 +159,19 @@ export function NeatTrainingPage() {
       const nextEngine = new NeatPopulation(seed, {
         track: { version: 'grand-prix-v3', seed },
       })
-      const run = await withFreshAccess((token) =>
-        trainingApi.createTrainingRun(token, {
-          name,
-          seed,
-          config: nextEngine.config,
-        }),
-      )
+      const run = isGuest
+        ? await guestTraining.createGuestRun({
+            name,
+            seed,
+            config: nextEngine.config,
+          })
+        : await withFreshAccess((token) =>
+            trainingApi.createTrainingRun(token, {
+              name,
+              seed,
+              config: nextEngine.config,
+            }),
+          )
       activateTraining(nextEngine, run)
       await runsQuery.refetch()
     } catch (error) {
@@ -164,16 +187,16 @@ export function NeatTrainingPage() {
     setSelectorBusy(true)
     setSelectorError(null)
     try {
-      const checkpoint = await withFreshAccess((token) =>
-        trainingApi.getLatestCheckpoint(token, run.id),
-      )
+      const checkpoint = isGuest
+        ? (await guestTraining.getGuestTraining(run.id)).checkpoint
+        : await withFreshAccess((token) =>
+            trainingApi.getLatestCheckpoint(token, run.id),
+          )
       const nextEngine = checkpoint
         ? NeatPopulation.fromSnapshot(checkpoint.snapshot)
         : new NeatPopulation(run.seed, run.config)
       activateTraining(nextEngine, run)
-      void withFreshAccess((token) =>
-        trainingApi.updateTrainingStatus(token, run.id, 'PAUSED'),
-      )
+      await updateRunStatus(run.id, 'PAUSED')
     } catch (error) {
       setSelectorError(
         error instanceof Error ? error.message : 'No se pudo cargar',
@@ -186,9 +209,11 @@ export function NeatTrainingPage() {
   async function deleteRun(run: TrainingRun) {
     setSelectorBusy(true)
     try {
-      await withFreshAccess((token) =>
-        trainingApi.deleteTrainingRun(token, run.id),
-      )
+      if (isGuest) await guestTraining.deleteGuestRun(run.id)
+      else
+        await withFreshAccess((token) =>
+          trainingApi.deleteTrainingRun(token, run.id),
+        )
       await runsQuery.refetch()
     } catch (error) {
       setSelectorError(
@@ -199,29 +224,34 @@ export function NeatTrainingPage() {
     }
   }
 
-  async function persistGeneration(run: TrainingRun, input: SaveCheckpointInput) {
-      if (saveInFlight.current) return false
-      saveInFlight.current = true
-      pendingSave.current = { run, input }
-      setPersistenceStatus('saving')
-      try {
-        const updated = await withFreshAccess((token) =>
-          trainingApi.saveCheckpoint(token, run.id, input),
-        )
-        if (activeRunId.current !== run.id) return false
-        pendingSave.current = null
-        setSelectedRun(updated)
-        queryClient.setQueryData<TrainingRun[]>(['training-runs'], (current) =>
-          current?.map((item) => (item.id === updated.id ? updated : item)),
-        )
-        setPersistenceStatus('saved')
-        return true
-      } catch {
-        if (activeRunId.current === run.id) setPersistenceStatus('error')
-        return false
-      } finally {
-        saveInFlight.current = false
-      }
+  async function persistGeneration(
+    run: TrainingRun,
+    input: SaveCheckpointInput,
+  ) {
+    if (saveInFlight.current) return false
+    saveInFlight.current = true
+    pendingSave.current = { run, input }
+    setPersistenceStatus('saving')
+    try {
+      const updated = isGuest
+        ? await guestTraining.saveGuestCheckpoint(run.id, input)
+        : await withFreshAccess((token) =>
+            trainingApi.saveCheckpoint(token, run.id, input),
+          )
+      if (activeRunId.current !== run.id) return false
+      pendingSave.current = null
+      setSelectedRun(updated)
+      queryClient.setQueryData<TrainingRun[]>(runsKey, (current) =>
+        current?.map((item) => (item.id === updated.id ? updated : item)),
+      )
+      setPersistenceStatus('saved')
+      return true
+    } catch {
+      if (activeRunId.current === run.id) setPersistenceStatus('error')
+      return false
+    } finally {
+      saveInFlight.current = false
+    }
   }
 
   const persistFromEffect = useEffectEvent(persistGeneration)
@@ -269,9 +299,11 @@ export function NeatTrainingPage() {
     setStatus('paused')
     setPersistenceStatus('saving')
     try {
-      const updated = await withFreshAccess((token) =>
-        trainingApi.updateTrainingTrack(token, selectedRun.id, track),
-      )
+      const updated = isGuest
+        ? await guestTraining.updateGuestTrack(selectedRun.id, track)
+        : await withFreshAccess((token) =>
+            trainingApi.updateTrainingTrack(token, selectedRun.id, track),
+          )
       engine.config.track = track
       pendingSave.current = null
       setSelectedRun(updated)
@@ -287,7 +319,7 @@ export function NeatTrainingPage() {
       setRunId((value) => value + 1)
       recordsRef.current = createEvaluationRecords(engine.genomes)
       fitnessRef.current = new Map()
-      queryClient.setQueryData<TrainingRun[]>(['training-runs'], (current) =>
+      queryClient.setQueryData<TrainingRun[]>(runsKey, (current) =>
         current?.map((item) => (item.id === updated.id ? updated : item)),
       )
       setPersistenceStatus('saved')
@@ -353,13 +385,23 @@ export function NeatTrainingPage() {
     }
   }
 
+  async function updateRunStatus(id: string, next: TrainingRun['status']) {
+    try {
+      if (isGuest) await guestTraining.updateGuestStatus(id, next)
+      else
+        await withFreshAccess((token) =>
+          trainingApi.updateTrainingStatus(token, id, next),
+        )
+    } catch {
+      setSelectorError('No se pudo actualizar el estado del entrenamiento.')
+    }
+  }
+
   function startTraining() {
     if (!selectedRun) return
     generationStartedAt.current = performance.now()
     setStatus('running')
-    void withFreshAccess((token) =>
-      trainingApi.updateTrainingStatus(token, selectedRun.id, 'RUNNING'),
-    )
+    void updateRunStatus(selectedRun.id, 'RUNNING')
   }
 
   function togglePause() {
@@ -370,20 +412,15 @@ export function NeatTrainingPage() {
     }
     const nextStatus = status === 'paused' ? 'running' : 'paused'
     setStatus(nextStatus)
-    void withFreshAccess((token) =>
-      trainingApi.updateTrainingStatus(
-        token,
-        selectedRun.id,
-        nextStatus === 'running' ? 'RUNNING' : 'PAUSED',
-      ),
+    void updateRunStatus(
+      selectedRun.id,
+      nextStatus === 'running' ? 'RUNNING' : 'PAUSED',
     )
   }
 
   function selectAnotherRun() {
     if (selectedRun) {
-      void withFreshAccess((token) =>
-        trainingApi.updateTrainingStatus(token, selectedRun.id, 'PAUSED'),
-      )
+      void updateRunStatus(selectedRun.id, 'PAUSED')
     }
     activeRunId.current = null
     pendingSave.current = null
@@ -425,6 +462,7 @@ export function NeatTrainingPage() {
           onSelectRun={selectAnotherRun}
           onStart={startTraining}
           persistenceStatus={persistenceStatus}
+          localOnly={isGuest}
           onRetrySave={pendingSave.current ? () => void retrySave() : undefined}
           populationSize={engine.config.populationSize}
           status={status}
@@ -447,6 +485,7 @@ export function NeatTrainingPage() {
           onCreate={createRun}
           onDelete={deleteRun}
           onLoad={loadRun}
+          localOnly={isGuest}
           runs={runsQuery.data ?? []}
         />
       )}
