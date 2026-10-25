@@ -283,6 +283,31 @@ it('follows and eliminates a selected car and closes its panel without pausing',
   expect(mocks.save).not.toHaveBeenCalled()
 })
 
+it('releases follow camera when the followed car crashes on its own', async () => {
+  const user = mountTraining()
+  await user.click(screen.getByRole('button', { name: 'Crear prueba' }))
+  await user.click(await screen.findByRole('button', { name: 'Iniciar' }))
+  const controls = registerCars()
+  act(() => mocks.scene!.onInspectCar(mocks.scene!.genomes[1].id))
+  await user.click(
+    within(screen.getByLabelText('Opciones de Auto 02')).getByRole('button', {
+      name: 'Seguir auto',
+    }),
+  )
+  expect(mocks.scene!.cameraMode).toBe('follow')
+  expect(mocks.scene!.selectedGenomeId).toBe(mocks.scene!.genomes[1].id)
+
+  act(() => {
+    controls[0].finish('collision')
+  })
+  expect(mocks.scene!.cameraMode).toBe('follow')
+
+  act(() => {
+    controls[1].finish('collision')
+  })
+  expect(mocks.scene!.cameraMode).toBe('free')
+})
+
 it('evolves after eliminating the last active car while paused', async () => {
   mocks.save.mockResolvedValue({
     id: 'run',

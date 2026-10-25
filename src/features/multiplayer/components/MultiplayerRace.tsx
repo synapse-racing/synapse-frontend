@@ -61,13 +61,13 @@ export function MultiplayerRace({
   useLayoutEffect(() => {
     const previous = previousSnapshot.current
     previousSnapshot.current = snapshot
+    const currentObserved = snapshot.players.find((p) => p.userId === observedId)
+    const previousObserved = previous.players.find((p) => p.userId === observedId)
     if (
       cameraMode === 'follow' &&
       previous.startAt === snapshot.startAt &&
-      snapshot.players.find((p) => p.userId === observedId)
-        ?.eliminationReason === 'HOST' &&
-      previous.players.find((p) => p.userId === observedId)
-        ?.eliminationReason !== 'HOST'
+      Boolean(currentObserved?.eliminationReason) &&
+      !previousObserved?.eliminationReason
     )
       setCameraMode('free')
   }, [snapshot, cameraMode, observedId])

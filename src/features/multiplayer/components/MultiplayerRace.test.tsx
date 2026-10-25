@@ -152,3 +152,24 @@ it('releases a spectator camera when the host eliminates the followed car', () =
   fireEvent.click(screen.getByRole('button', { name: 'Seguir piloto' }))
   expect(screen.getByLabelText('Cámara')).toHaveTextContent('follow')
 })
+
+it('releases a spectator camera when the followed car collides', () => {
+  const input = props()
+  input.currentUserId = 'guest'
+  const view = render(<MultiplayerRace {...input} />)
+  fireEvent.click(screen.getByRole('button', { name: 'Seguir a host' }))
+  view.rerender(
+    <MultiplayerRace
+      {...input}
+      snapshot={{
+        ...input.snapshot,
+        players: input.snapshot.players.map((p) =>
+          p.userId === 'host'
+            ? { ...p, eliminated: true, eliminationReason: 'COLLISION' }
+            : p,
+        ),
+      }}
+    />,
+  )
+  expect(screen.getByLabelText('Cámara')).toHaveTextContent('free')
+})

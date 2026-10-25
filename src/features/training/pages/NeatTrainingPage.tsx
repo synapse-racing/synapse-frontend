@@ -80,6 +80,10 @@ export function NeatTrainingPage() {
   const [currentBest, setCurrentBest] = useState(0)
   const [cameraMode, setCameraMode] = useState<RaceCameraMode>('overview')
   const [selectedCar, setSelectedCar] = useState(0)
+  const cameraModeRef = useRef(cameraMode)
+  cameraModeRef.current = cameraMode
+  const selectedCarRef = useRef(selectedCar)
+  selectedCarRef.current = selectedCar
   const [inspectedCar, setInspectedCar] = useState<string | null>(null)
   const [, refreshPanel] = useState(0)
   const [timeScale, setTimeScale] = useState<SimulationSpeed>(1)
@@ -307,6 +311,13 @@ export function NeatTrainingPage() {
     fitnessRef.current.set(genomeId, fitness)
     setCurrentBest((best) => Math.max(best, fitness))
     setAlive((value) => Math.max(0, value - 1))
+    if (
+      cameraModeRef.current === 'follow' &&
+      genomes[selectedCarRef.current]?.id === genomeId
+    ) {
+      cameraModeRef.current = 'free'
+      setCameraMode('free')
+    }
   }
 
   const canControlGeneration =
