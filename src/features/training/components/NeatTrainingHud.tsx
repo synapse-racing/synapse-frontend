@@ -6,6 +6,7 @@ import {
   type SimulationSpeed,
 } from '../../../shared/game/SimulationSpeedControl.tsx'
 import { GameSettings } from '../../../shared/game/GameSettings.tsx'
+import type { RaceCameraMode } from '../../../shared/three/RaceCamera.tsx'
 
 export type TrainingStatus = 'idle' | 'running' | 'paused' | 'evolving'
 export type PersistenceStatus = 'idle' | 'saving' | 'saved' | 'error'
@@ -21,14 +22,18 @@ interface NeatTrainingHudProps {
   onReset: () => void
   onSelectRun: () => void
   onStart: () => void
+  onAdvanceGeneration?: () => void
+  canAdvanceGeneration?: boolean
+  inspectingCar?: boolean
+  onDismissCar?: () => void
   persistenceStatus: PersistenceStatus
   localOnly?: boolean
   onRetrySave?: () => void
   populationSize: number
   status: TrainingStatus
   trainingName: string
-  cameraMode?: 'overview' | 'follow'
-  onCameraModeChange?: (mode: 'overview' | 'follow') => void
+  cameraMode?: RaceCameraMode
+  onCameraModeChange?: (mode: RaceCameraMode) => void
   selectedCar?: number
   onSelectedCarChange?: (index: number) => void
   trackSeed?: number
@@ -60,6 +65,10 @@ export function NeatTrainingHud({
   onReset,
   onSelectRun,
   onStart,
+  onAdvanceGeneration,
+  canAdvanceGeneration = false,
+  inspectingCar = false,
+  onDismissCar,
   persistenceStatus,
   localOnly = false,
   onRetrySave,
@@ -103,6 +112,14 @@ export function NeatTrainingHud({
           </span>
         </div>
         <div className="neat-hud__actions">
+          {onAdvanceGeneration && (
+            <button
+              disabled={!canAdvanceGeneration}
+              onClick={onAdvanceGeneration}
+            >
+              Pasar de generación
+            </button>
+          )}
           <SimulationSpeedControl
             speed={timeScale}
             onChange={onTimeScaleChange}
@@ -111,11 +128,11 @@ export function NeatTrainingHud({
             <button
               onClick={() =>
                 onCameraModeChange(
-                  cameraMode === 'overview' ? 'follow' : 'overview',
+                  cameraMode === 'follow' ? 'overview' : 'follow',
                 )
               }
             >
-              {cameraMode === 'overview' ? 'Seguir auto' : 'Vista general'}
+              {cameraMode === 'follow' ? 'Vista general' : 'Seguir auto'}
             </button>
           )}
           {onSelectedCarChange && (
@@ -141,6 +158,7 @@ export function NeatTrainingHud({
             onClick={() => {
               setTelemetry(!telemetry)
               setControls(false)
+              onDismissCar?.()
             }}
           >
             Telemetría
@@ -150,6 +168,7 @@ export function NeatTrainingHud({
             onClick={() => {
               setControls(!controls)
               setTelemetry(false)
+              onDismissCar?.()
             }}
           >
             Opciones
@@ -184,7 +203,7 @@ export function NeatTrainingHud({
         </p>
         <h2>Generación {generation + 1}</h2>
       </section>
-      {(controls || status === 'paused') && !telemetry && (
+      {!inspectingCar && (controls || status === 'paused') && !telemetry && (
         <section
           className="telemetry-panel"
           aria-label="Opciones del entrenamiento"
@@ -218,7 +237,7 @@ export function NeatTrainingHud({
           </p>
         </section>
       )}
-      {telemetry && (
+      {telemetry && !inspectingCar && (
         <section className="telemetry-panel" aria-label="Telemetría NEAT">
           <h3>Sensores de los autos</h3>
           <label className="setting-toggle">

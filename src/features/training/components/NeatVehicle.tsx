@@ -1,5 +1,5 @@
 import { useFrame } from '@react-three/fiber'
-import { useRef } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import type { Group } from 'three'
 import { RaceCarModel } from '../../../shared/three/RaceCarModel.tsx'
 import { SensorRays } from './SensorRays.tsx'
@@ -9,9 +9,13 @@ import type { TrackDefinition } from '../domain/track.ts'
 import { evaluateGenome } from '../neat/genome.ts'
 import type { Genome } from '../neat/genes.ts'
 import {
+  createAgentControl,
+  type AgentFinishReason,
+  type RegisterAgentControl,
+} from '../domain/agent-control.ts'
+import {
   createSimulationState,
   senseSimulation,
-  raceTimeLimit,
   simulationStepSeconds,
   stepSimulation,
 } from '../simulation/race-contract.ts'
@@ -19,7 +23,13 @@ import {
 interface NeatVehicleProps {
   genome: Genome
   index: number
-  onFinish: (genomeId: string, runtime: AgentRuntime) => void
+  onFinish: (
+    genomeId: string,
+    runtime: AgentRuntime,
+    reason?: AgentFinishReason,
+  ) => void
+  onInspect: (genomeId: string) => void
+  onRegister: RegisterAgentControl
   onCheckpoint: (index: number, rigidBodyName: string) => void
   timeScale: number
   running: boolean
@@ -40,16 +50,30 @@ export function NeatVehicle({
   selected,
   showRaycasts,
   onPose,
+  onInspect,
+  onRegister,
 }: NeatVehicleProps) {
   const meshRef = useRef<Group>(null)
   const state = useRef(createSimulationState(track))
   const accumulator = useRef(0)
-  const finished = useRef(false)
+  const latestFinish = useRef(onFinish)
+  latestFinish.current = onFinish
+  const control = useMemo(
+    () =>
+      createAgentControl(state.current, track, (runtime, reason) =>
+        latestFinish.current(genome.id, runtime, reason),
+      ),
+    [track, genome.id],
+  )
+  useEffect(
+    () => onRegister(genome.id, control),
+    [genome.id, control, onRegister],
+  )
 
   useFrame((_, frameDelta) => {
-    if (!running || finished.current) return
+    if (!running || control.finished) return
     accumulator.current += Math.min(frameDelta, 0.25) * timeScale
-    while (accumulator.current >= simulationStepSeconds && !finished.current) {
+    while (accumulator.current >= simulationStepSeconds && !control.finished) {
       const simulation = state.current
       const [steering, throttle] = evaluateGenome(genome, [
         ...senseSimulation(simulation, track),
@@ -60,15 +84,15 @@ export function NeatVehicle({
         onCheckpoint(checkpoint, `neat-car:${genome.id}`),
       )
       if (result.finished) {
-        finished.current = true
-        onFinish(genome.id, {
-          aliveSeconds: Math.min(
-            raceTimeLimit(track),
-            simulation.elapsedSteps * simulationStepSeconds,
-          ),
-          collided: simulation.collided,
-          traveledDistance: simulation.traveledDistance,
-        })
+        control.finish(
+          simulation.collided
+            ? 'collision'
+            : simulation.laps >= 1
+              ? 'finished'
+              : result.stalled
+                ? 'stalled'
+                : 'timeout',
+        )
       }
       accumulator.current -= simulationStepSeconds
     }
@@ -87,12 +111,18 @@ export function NeatVehicle({
         ref={meshRef}
         position={[state.current.x, 0, state.current.z]}
         rotation={[0, state.current.yaw, 0]}
+        onClick={(event) => {
+          if (event.button !== 0 || event.delta > 5) return
+          event.stopPropagation()
+          onInspect(genome.id)
+        }}
       >
         <RaceCarModel
           color={`hsl(${hue},72%,56%)`}
           selected={selected}
+          faded={control.reason === 'manual'}
           getSpeed={() =>
-            finished.current || !running ? 0 : state.current.speed
+            control.finished || !running ? 0 : state.current.speed
           }
         />
       </group>

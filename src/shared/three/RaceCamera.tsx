@@ -8,22 +8,35 @@ export interface CarPose {
   z: number
   yaw: number
 }
+export type RaceCameraMode = 'overview' | 'follow' | 'free'
 export function RaceCamera({
   mode,
   extent = 50,
   getTarget,
 }: {
   extent?: number
-  mode: 'overview' | 'follow'
+  mode: RaceCameraMode
   getTarget: () => CarPose | undefined
 }) {
   const { camera, size } = useThree()
   const reduced = useReducedMotion()
   const desired = useMemo(() => new Vector3(), [])
-  const look = useMemo(() => new Vector3(), [])
+  const look = useMemo(
+    () =>
+      camera
+        .getWorldDirection(new Vector3())
+        .multiplyScalar(20)
+        .add(camera.position),
+    [camera],
+  )
+  const orbitTarget = useMemo<[number, number, number]>(
+    () => (mode === 'free' ? [look.x, look.y, look.z] : [0, 0, 0]),
+    [mode, look],
+  )
   useEffect(() => {
     if (mode === 'overview') {
-      const fit = Math.max(1, extent / 50) * Math.max(1, 1.1 / (size.width / size.height))
+      const fit =
+        Math.max(1, extent / 50) * Math.max(1, 1.1 / (size.width / size.height))
       camera.position.set(0, 52 * fit, 46 * fit)
       camera.lookAt(0, 0, 0)
     }
@@ -41,11 +54,11 @@ export function RaceCamera({
     look.set(target.x, 0.5, target.z)
     camera.lookAt(look)
   })
-  return mode === 'overview' ? (
+  return mode !== 'follow' ? (
     <OrbitControls
       makeDefault
-      target={[0, 0, 0]}
-      minDistance={15}
+      target={orbitTarget}
+      minDistance={mode === 'free' ? 1 : 15}
       maxDistance={Math.max(100, extent * 4)}
       maxPolarAngle={Math.PI / 2.15}
     />

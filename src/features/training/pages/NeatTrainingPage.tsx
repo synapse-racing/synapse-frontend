@@ -1,7 +1,9 @@
 import { SceneCanvas } from '../../../shared/three/SceneCanvas.tsx'
+import type { RaceCameraMode } from '../../../shared/three/RaceCamera.tsx'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   Suspense,
+  useCallback,
   useEffect,
   useEffectEvent,
   useMemo,
@@ -19,6 +21,11 @@ import {
   type TrainingStatus,
 } from '../components/NeatTrainingHud.tsx'
 import type { SimulationSpeed } from '../../../shared/game/SimulationSpeedControl.tsx'
+import { CarActions } from '../../../shared/game/CarActions.tsx'
+import type {
+  AgentControl,
+  AgentFinishReason,
+} from '../domain/agent-control.ts'
 import { NeatTrainingScene } from '../components/NeatTrainingScene.tsx'
 import { TrainingRunSelector } from '../components/TrainingRunSelector.tsx'
 import { calculateFitness, type AgentRuntime } from '../domain/fitness.ts'
@@ -36,6 +43,7 @@ const neatCarPrefix = 'neat-car:'
 
 interface EvaluationRecord {
   progress: TrackProgress
+  reason?: AgentFinishReason
 }
 
 function createEvaluationRecords(genomes: Genome[]) {
@@ -70,10 +78,10 @@ export function NeatTrainingPage() {
   const [alive, setAlive] = useState(engine.config.populationSize)
   const [metrics, setMetrics] = useState(() => createInitialMetrics(engine))
   const [currentBest, setCurrentBest] = useState(0)
-  const [cameraMode, setCameraMode] = useState<'overview' | 'follow'>(
-    'overview',
-  )
+  const [cameraMode, setCameraMode] = useState<RaceCameraMode>('overview')
   const [selectedCar, setSelectedCar] = useState(0)
+  const [inspectedCar, setInspectedCar] = useState<string | null>(null)
+  const [, refreshPanel] = useState(0)
   const [timeScale, setTimeScale] = useState<SimulationSpeed>(1)
   const [showRaycasts, setShowRaycasts] = useState(false)
   const [runId, setRunId] = useState(0)
@@ -84,6 +92,16 @@ export function NeatTrainingPage() {
     useState<PersistenceStatus>('idle')
   const recordsRef = useRef(createEvaluationRecords(engine.genomes))
   const fitnessRef = useRef(new Map<string, number>())
+  const carControls = useRef(new Map<string, AgentControl>())
+  const generationClosing = useRef(false)
+  const resumeAfterEvolution = useRef(true)
+  const registerCar = useCallback((id: string, control: AgentControl) => {
+    carControls.current.set(id, control)
+    return () => {
+      if (carControls.current.get(id) === control)
+        carControls.current.delete(id)
+    }
+  }, [])
   const pendingSave = useRef<{
     run: TrainingRun
     input: SaveCheckpointInput
@@ -130,6 +148,10 @@ export function NeatTrainingPage() {
   function activateTraining(nextEngine: NeatPopulation, run: TrainingRun) {
     activeRunId.current = run.id
     pendingSave.current = null
+    generationClosing.current = false
+    resumeAfterEvolution.current = true
+    carControls.current.clear()
+    setInspectedCar(null)
     setSelectedCar(0)
     setEngine(nextEngine)
     setGenomes([...nextEngine.genomes])
@@ -268,17 +290,84 @@ export function NeatTrainingPage() {
       index,
       activeTrack.checkpoints.length,
     )
+    if (inspectedCar === genomeId) refreshPanel((value) => value + 1)
   }
 
-  function handleAgentFinish(genomeId: string, runtime: AgentRuntime) {
+  function handleAgentFinish(
+    genomeId: string,
+    runtime: AgentRuntime,
+    reason: AgentFinishReason = runtime.collided ? 'collision' : 'finished',
+  ) {
     if (fitnessRef.current.has(genomeId)) return
     const record = recordsRef.current.get(genomeId)
     if (!record) return
+    record.reason = reason
 
     const fitness = calculateFitness(runtime, record.progress)
     fitnessRef.current.set(genomeId, fitness)
     setCurrentBest((best) => Math.max(best, fitness))
     setAlive((value) => Math.max(0, value - 1))
+  }
+
+  const canControlGeneration =
+    Boolean(selectedRun) &&
+    (status === 'running' || status === 'paused') &&
+    !pendingSave.current &&
+    !generationClosing.current &&
+    !saveInFlight.current
+
+  function finishCar(id: string) {
+    const control = carControls.current.get(id)
+    if (control) control.finish('manual')
+    else
+      handleAgentFinish(
+        id,
+        { aliveSeconds: 0, traveledDistance: 0, collided: false },
+        'manual',
+      )
+  }
+
+  function advanceGeneration() {
+    if (
+      !canControlGeneration ||
+      generationClosing.current ||
+      saveInFlight.current ||
+      pendingSave.current
+    )
+      return
+    generationClosing.current = true
+    resumeAfterEvolution.current = status === 'running'
+    for (const genome of genomes)
+      if (!fitnessRef.current.has(genome.id)) finishCar(genome.id)
+    setStatus('evolving')
+  }
+
+  function eliminateCar(id: string) {
+    if (
+      !canControlGeneration ||
+      generationClosing.current ||
+      saveInFlight.current ||
+      pendingSave.current ||
+      fitnessRef.current.has(id) ||
+      !recordsRef.current.has(id)
+    )
+      return
+    resumeAfterEvolution.current = status === 'running'
+    finishCar(id)
+    if (cameraMode === 'follow' && genomes[selectedCar]?.id === id)
+      setCameraMode('free')
+    if (fitnessRef.current.size === genomes.length) {
+      generationClosing.current = true
+      setStatus('evolving')
+    }
+  }
+
+  function inspectCar(id: string) {
+    if (!selectedRun || status === 'evolving') return
+    const index = genomes.findIndex((genome) => genome.id === id)
+    if (index < 0) return
+    setSelectedCar(index)
+    setInspectedCar(id)
   }
 
   function resetTraining() {
@@ -306,6 +395,9 @@ export function NeatTrainingPage() {
           )
       engine.config.track = track
       pendingSave.current = null
+      generationClosing.current = false
+      carControls.current.clear()
+      setInspectedCar(null)
       setSelectedRun(updated)
       setGenomes([...engine.genomes])
       setAlive(engine.config.populationSize)
@@ -334,6 +426,8 @@ export function NeatTrainingPage() {
       alive === 0 &&
       fitnessRef.current.size === genomes.length
     ) {
+      generationClosing.current = true
+      resumeAfterEvolution.current = true
       setStatus('evolving')
     }
   }, [alive, genomes.length, status])
@@ -354,6 +448,7 @@ export function NeatTrainingPage() {
       setGenomes([...engine.genomes])
       setAlive(engine.config.populationSize)
       setCurrentBest(0)
+      setInspectedCar(null)
       recordsRef.current = createEvaluationRecords(engine.genomes)
       fitnessRef.current = new Map()
       if (selectedRun) {
@@ -368,7 +463,8 @@ export function NeatTrainingPage() {
         })
         if (activeRunId.current !== selectedRun.id) return
         generationStartedAt.current = performance.now()
-        setStatus(saved ? 'running' : 'paused')
+        if (saved) generationClosing.current = false
+        setStatus(saved && resumeAfterEvolution.current ? 'running' : 'paused')
       }
     }
 
@@ -381,7 +477,8 @@ export function NeatTrainingPage() {
     const saved = await persistGeneration(pending.run, pending.input)
     if (saved && activeRunId.current === pending.run.id) {
       generationStartedAt.current = performance.now()
-      setStatus('running')
+      generationClosing.current = false
+      setStatus(resumeAfterEvolution.current ? 'running' : 'paused')
     }
   }
 
@@ -400,6 +497,7 @@ export function NeatTrainingPage() {
   function startTraining() {
     if (!selectedRun) return
     generationStartedAt.current = performance.now()
+    resumeAfterEvolution.current = true
     setStatus('running')
     void updateRunStatus(selectedRun.id, 'RUNNING')
   }
@@ -438,6 +536,8 @@ export function NeatTrainingPage() {
             generationKey={generationKey}
             genomes={genomes}
             onAgentFinish={handleAgentFinish}
+            onInspectCar={inspectCar}
+            onRegisterCar={registerCar}
             onCheckpoint={handleCheckpoint}
             running={running}
             timeScale={timeScale}
@@ -461,6 +561,10 @@ export function NeatTrainingPage() {
           onReset={resetTraining}
           onSelectRun={selectAnotherRun}
           onStart={startTraining}
+          onAdvanceGeneration={advanceGeneration}
+          canAdvanceGeneration={canControlGeneration}
+          inspectingCar={inspectedCar !== null}
+          onDismissCar={() => setInspectedCar(null)}
           persistenceStatus={persistenceStatus}
           localOnly={isGuest}
           onRetrySave={pendingSave.current ? () => void retrySave() : undefined}
@@ -470,7 +574,10 @@ export function NeatTrainingPage() {
           cameraMode={cameraMode}
           onCameraModeChange={setCameraMode}
           selectedCar={selectedCar}
-          onSelectedCarChange={setSelectedCar}
+          onSelectedCarChange={(index) => {
+            const genome = genomes[index]
+            if (genome) inspectCar(genome.id)
+          }}
           trackSeed={activeTrack.recipe.seed}
           showRaycasts={showRaycasts}
           onShowRaycastsChange={setShowRaycasts}
@@ -487,6 +594,18 @@ export function NeatTrainingPage() {
           onLoad={loadRun}
           localOnly={isGuest}
           runs={runsQuery.data ?? []}
+        />
+      )}
+      {inspectedCar && selectedRun && (
+        <CarActions
+          name={`Auto ${String(genomes.findIndex((g) => g.id === inspectedCar) + 1).padStart(2, '0')}`}
+          status={`${recordsRef.current.get(inspectedCar)?.reason === 'manual' ? 'Eliminado manualmente' : fitnessRef.current.has(inspectedCar) ? 'Evaluación terminada' : status === 'idle' ? 'Preparado' : 'En pista'} · ${recordsRef.current.get(inspectedCar)?.progress.passedCheckpoints ?? 0}/${activeTrack.checkpoints.length} sectores`}
+          onFollow={() => setCameraMode('follow')}
+          onEliminate={() => eliminateCar(inspectedCar)}
+          canEliminate={
+            canControlGeneration && !fitnessRef.current.has(inspectedCar)
+          }
+          onClose={() => setInspectedCar(null)}
         />
       )}
     </main>
