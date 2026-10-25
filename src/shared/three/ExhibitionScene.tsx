@@ -25,6 +25,7 @@ export default function ExhibitionScene({ theme, calm, paused, reduced, visible,
   const sun = useRef<DirectionalLight>(null)
   const time = useRef(0)
   const previous = useRef('')
+  const tracksideDistance = useRef(0)
   const { camera, size } = useThree()
   const vectors = useMemo(() => ({ position: new Vector3(), target: new Vector3(), right: new Vector3(), up: new Vector3(0, 1, 0) }), [])
   const speeds = useRef([0, 0, 0, 0])
@@ -58,11 +59,13 @@ export default function ExhibitionScene({ theme, calm, paused, reduced, visible,
         break
       case 1:
         position.set(hero.x - forwardX * 8 + rightX * 2, 2.5, hero.z - forwardZ * 8 + rightZ * 2)
-        target.add(new Vector3(forwardX * 3, 0, forwardZ * 3))
+        target.x += forwardX * 3
+        target.z += forwardZ * 3
         fov = 52
         break
       case 2: {
-        const anchor = path.pose(hero.distance + (1 - shot.progress) * 19 - 6, 7)
+        if (cut) tracksideDistance.current = hero.distance + 12
+        const anchor = path.pose(tracksideDistance.current, 7)
         position.set(anchor.x, 1.25, anchor.z)
         fov = 60
         break
@@ -77,7 +80,7 @@ export default function ExhibitionScene({ theme, calm, paused, reduced, visible,
     }
     // Frame the race on the open side of the menu instead of behind its text.
     right.copy(target).sub(position).cross(up).normalize()
-    target.addScaledVector(right, size.width > 850 ? -4.5 : -0.5)
+    target.addScaledVector(right, size.width > 850 ? (calm ? 2.5 : -4.5) : -0.5)
     if (cut || reduced) camera.position.copy(position)
     else camera.position.lerp(position, 1 - Math.exp(-5 * Math.min(delta, 0.05)))
     camera.lookAt(target)

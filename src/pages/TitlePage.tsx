@@ -1,7 +1,6 @@
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../features/auth/context/useAuth.ts'
-import { GarageBackdrop } from '../shared/game/GarageBackdrop.tsx'
 import { GameSettings } from '../shared/game/GameSettings.tsx'
 import {
   playMenuSound,
@@ -31,20 +30,19 @@ export function TitlePage() {
   }, [auth.status, destination, navigate, preferences.sound])
   return (
     <main className="game-shell title-screen">
-      <GarageBackdrop />
       <header className="game-header">
-        <span className="wordmark">SYNAPSE / MOTORSPORT</span>
+        <span className="wordmark">SYNAPSE <span className="wordmark__slash">/</span> MOTORSPORT</span>
         <GameSettings />
       </header>
       <div className="title-content">
-        <p className="eyebrow">Inteligencia al límite.</p>
+        <p className="eyebrow title-kicker"><span /> EL PRÓXIMO PILOTO LO CREAS TÚ.</p>
         <h1>
           SYNAPSE<span>RACING</span>
         </h1>
         <p className="title-tagline">
-          Entrena a tu piloto.
+          Nacidos del código.
           <br />
-          Gánate la pista.
+          Hechos para competir.
         </p>
         <button
           className="enter-button"
@@ -56,14 +54,14 @@ export function TitlePage() {
         >
           <kbd>ENTER</kbd>
           {auth.status === 'loading'
-            ? 'Preparando el garaje…'
+            ? 'Preparando el paddock…'
             : 'Presiona Enter para continuar'}
           <span aria-hidden="true">↗</span>
         </button>
       </div>
       <footer className="game-footer">
-        <span>01 / AUTONOMOUS RACING</span>
-        <span>TECLADO · RATÓN · TÁCTIL</span>
+        <span>NEAT POWERED <span className="footer-separator">/</span> HUMAN DRIVEN</span>
+        <span>ENTRENA. EVOLUCIONA. COMPITE.</span>
       </footer>
     </main>
   )

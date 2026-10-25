@@ -39,7 +39,7 @@ export function GameSettings() {
             checked={preferences.sound}
             onChange={(e) => update({ sound: e.target.checked })}
           />{' '}
-          Sonidos del menú
+          Sonidos del menú y motores
         </label>
         <label className="setting-toggle">
           <input

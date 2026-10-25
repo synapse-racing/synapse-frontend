@@ -1,0 +1,114 @@
+.menu-stage {
+  position: relative;
+  isolation: isolate;
+  min-height: 100svh;
+  background: #252d2b;
+}
+.exhibition-backdrop,
+.menu-stage__shade {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+}
+.menu-stage__transition { position: fixed; inset: 0; z-index: -1; pointer-events: none; background: #101817; opacity: 0; transition: opacity 350ms; }
+.menu-stage__transition.is-switching { opacity: 1; transition-duration: 180ms; }
+.exhibition-backdrop { z-index: -3; }
+.exhibition-backdrop > div:not(.exhibition-poster):not(.exhibition-unavailable) { position: absolute !important; inset: 0; }
+.exhibition-poster { position: absolute; inset: 0; background: linear-gradient(160deg, #ad9d7f, #505e4a); }
+.exhibition-poster svg { width: 100%; height: 100%; }
+.exhibition-unavailable { position: absolute; bottom: 9rem; right: 3rem; font: 11px monospace; color: #eee4cf; }
+.menu-stage__shade {
+  z-index: -2;
+  background: linear-gradient(90deg, #101817ed, #101817c9 28%, #10181745 55%, #10181700 80%),
+    linear-gradient(0deg, #0d1516f0, #11191700 24%, #11191700 75%, #10171755);
+}
+.menu-stage--auth .menu-stage__shade { background: linear-gradient(90deg, #1018178c, #1018172e 50%, #101817de), linear-gradient(0deg, #0d1516e8, transparent 45%); }
+.menu-stage__screen { animation: menu-arrive 450ms ease-out both; }
+.menu-stage .game-shell,
+.menu-stage .auth-shell { background: transparent; }
+.menu-stage .game-shell:after,
+.menu-stage .auth-shell:after { display: none; }
+.menu-stage .game-header { border-bottom: 0; padding-top: 2rem; }
+.menu-stage .wordmark { font-size: 13px; letter-spacing: 0.08em; }
+.wordmark__slash { color: var(--accent); padding: 0 0.5rem; }
+.menu-stage .title-content { max-width: 760px; padding-top: 4rem; padding-bottom: 7rem; }
+.menu-stage .title-content h1 { font-size: clamp(5rem, 10.8vw, 10.5rem); line-height: 0.81; letter-spacing: -0.045em; }
+.menu-stage .title-content h1 span { font-size: 0.4em; letter-spacing: 0.32em; color: #f3ebdc; margin: 0.25em 0 0 0.09em; font-family: Impact, 'Arial Narrow', sans-serif; font-style: normal; }
+.title-kicker { display: flex; align-items: center; gap: 0.75rem; font-size: 10px; letter-spacing: 0.19em; color: #e6d1b0; }
+.title-kicker > span { width: 25px; height: 2px; background: var(--accent); }
+.menu-stage .title-tagline { color: #d0d3c7; font-size: 15px; line-height: 1.65; margin: 2rem 0 2.4rem; }
+.menu-stage .enter-button { background: #ff7840; display: flex; align-items: center; padding: 1rem 1.3rem; gap: 1rem; font-size: 13px; box-shadow: 0 8px 35px #00000026; }
+.menu-stage .enter-button kbd { background: #202823; color: #ffb78f; border: 0; padding: 0.35rem 0.45rem; }
+.menu-stage .enter-button > span { margin-left: 0.8rem; font-size: 1.4rem; }
+.menu-stage .enter-button:hover:not(:disabled) { background: #ff996c; }
+.menu-stage .game-footer { font-size: 9px; letter-spacing: 0.14em; color: #aeb7a7; border: 0; min-height: 70px; }
+.footer-separator { color: var(--accent); padding: 0 0.65rem; }
+.exhibition-strip { position: fixed; z-index: 3; right: clamp(1.25rem, 5vw, 5rem); bottom: 5.6rem; display: flex; align-items: center; gap: 1.1rem; padding: 0.75rem 0 0.75rem 1rem; border-left: 2px solid #ff7c43; background: linear-gradient(90deg, #10201bcc, #10201b80); backdrop-filter: blur(8px); }
+.exhibition-strip__label { display: flex; align-items: center; gap: 0.5rem; font: 9px monospace; letter-spacing: 0.11em; color: #e3cda6; }
+.exhibition-strip__label i { display: block; width: 5px; height: 5px; border-radius: 50%; background: #ed9964; box-shadow: 0 0 10px #ff9f4b55; }
+.exhibition-strip > div:not(.exhibition-shots) { display: grid; gap: 0.3rem; min-width: 150px; }
+.exhibition-strip strong { font: 11px Arial, sans-serif; color: #f7f1e5; }
+.exhibition-strip div > span { font: 9px monospace; color: #aebbad; }
+.exhibition-shots { display: flex; gap: 4px; }
+.exhibition-shots b { width: 10px; height: 2px; background: #dce2c73b; }
+.exhibition-shots b.is-active { background: #ffac75; }
+.exhibition-strip button { min-width: 44px; color: #f0dfbe; border-left: 1px solid #d9dfc51c; }
+.menu-stage .paddock-content { width: min(650px, 100%); padding-bottom: 7rem; }
+.menu-stage .paddock-content h1 { font-size: clamp(4rem, 6vw, 7rem); margin: 1.3rem 0 2rem; }
+.menu-stage .game-menu { gap: 0.55rem; }
+.menu-stage .game-menu a { background: #152321b8; backdrop-filter: blur(8px); border-left: 2px solid #c7d4bc42; padding: 1.4rem; transition: background 180ms, border-color 180ms, transform 180ms; }
+.menu-stage .game-menu a:hover,
+.menu-stage .game-menu a:focus-visible { background: #28352be8; border-left-color: var(--accent); transform: translateX(5px); }
+.menu-stage .game-menu h2 { font-size: 1.9rem; }
+.menu-stage .game-menu p { color: #bfc9bd; font-size: 12px; }
+.menu-stage .auth-shell { padding-bottom: 7rem; min-height: 100svh; grid-template-columns: 1fr minmax(390px, 43%); }
+.auth-intro__header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.auth-intro__header .auth-brand { font-size: 12px; letter-spacing: 0.05em; }
+.menu-stage .auth-intro { padding-top: 2rem; }
+.menu-stage .auth-intro h1 { font-size: clamp(4rem, 6.5vw, 7.5rem); margin: 2rem 0 1rem; }
+.menu-stage .auth-intro h1 em { color: #ff8852; }
+.menu-stage .auth-intro > div > p:last-child { color: #e0dfcf; max-width: 25ch; font-size: 14px; }
+.menu-stage .auth-form-panel { padding: 2rem clamp(1.5rem, 4vw, 4rem); background: #12201dd9; border-left: 1px solid #e2ddc41c; backdrop-filter: blur(14px); }
+.menu-stage .auth-form h2 { font-size: 2.5rem; }
+.menu-stage .auth-form input { background: #0b161bc4; border-color: #7282755c; }
+.menu-stage .auth-form .field { margin: 1.2rem 0; }
+.menu-stage--auth .exhibition-strip { left: clamp(1.25rem, 5vw, 5rem); right: auto; bottom: 2rem; }
+@keyframes menu-arrive { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+@media (max-width: 850px) {
+  .menu-stage__shade { background: linear-gradient(90deg, #101817d9, #1018173b 90%), linear-gradient(0deg, #0d1516f5, transparent 55%); }
+  .menu-stage .auth-shell { grid-template-columns: 1fr 1fr; }
+  .menu-stage .auth-intro { padding: 2rem 1.5rem; }
+  .exhibition-shots { display: none; }
+  .exhibition-strip { gap: 0.7rem; }
+}
+@media (max-width: 600px) {
+  .menu-stage .game-header { padding: 1rem 1.25rem; }
+  .menu-stage .wordmark { font-size: 10px; }
+  .menu-stage .title-content { padding: 2rem 1.5rem 10rem; margin: auto 0; }
+  .menu-stage .title-content h1 { font-size: clamp(4.8rem, 19vw, 7rem); }
+  .menu-stage .title-content h1 span { letter-spacing: 0.23em; }
+  .menu-stage .title-tagline { margin: 1.7rem 0; }
+  .menu-stage .enter-button { font-size: 11px; gap: 0.7rem; width: 100%; max-width: 340px; }
+  .menu-stage .game-footer { padding: 1rem 1.5rem; font-size: 8px; gap: 0.75rem; }
+  .menu-stage .game-footer > span:last-child { display: none; }
+  .exhibition-strip { left: 1.5rem; right: 1.5rem; bottom: 4.2rem; padding: 0.5rem 0 0.5rem 0.8rem; }
+  .exhibition-strip button { margin-left: auto; }
+  .exhibition-strip__label { font-size: 8px; }
+  .exhibition-strip > div:not(.exhibition-shots) { min-width: 0; }
+  .menu-stage .auth-shell { display: block; padding-bottom: 8rem; }
+  .menu-stage .auth-intro { min-height: 0; padding: 1rem 1.5rem 1.5rem; }
+  .menu-stage .auth-intro h1 { font-size: 2.5rem; margin: 2rem 0 0; }
+  .menu-stage .auth-intro h1 br { display: none; }
+  .menu-stage .auth-intro .eyebrow { display: none; }
+  .menu-stage .auth-form-panel { margin: 0 1rem; padding: 1.6rem; border: 1px solid #e2ddc41c; }
+  .menu-stage--auth .exhibition-strip { position: absolute; bottom: 1.25rem; left: 1.5rem; right: 1.5rem; }
+  .menu-stage .paddock-content { padding: 1.5rem 1.5rem 10rem; }
+  .menu-stage .paddock-content h1 { font-size: 3.5rem; }
+  .menu-stage .game-menu a { padding: 1.1rem; }
+  .menu-stage .game-menu h2 { font-size: 1.5rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .menu-stage__screen { animation: none; }
+  .menu-stage .game-menu a { transition: none; }
+  .menu-stage__transition { transition: none; }
+}
