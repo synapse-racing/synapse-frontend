@@ -3,8 +3,8 @@ import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import App from './App.tsx'
 import { AppProviders } from './app/providers.tsx'
-vi.mock('./shared/game/GarageBackdrop.tsx', () => ({
-  GarageBackdrop: () => null,
+vi.mock('./shared/game/ExhibitionBackdrop.tsx', () => ({
+  ExhibitionBackdrop: () => <div data-testid="exhibition-canvas" />,
 }))
 
 const authenticatedUser = {
@@ -43,11 +43,13 @@ describe('authentication navigation', () => {
     )
 
     const enter = await screen.findByRole('button', { name: /Presiona Enter/ })
+    const exhibition = await screen.findByTestId('exhibition-canvas')
     expect(enter).toBeEnabled()
     await userEvent.keyboard('{Enter}')
     expect(
       await screen.findByRole('heading', { name: 'Iniciar sesion' }),
     ).toBeInTheDocument()
+    expect(screen.getByTestId('exhibition-canvas')).toBe(exhibition)
   })
 
   it('opens the dashboard after a valid login', async () => {

@@ -1,22 +1,25 @@
 import { Link } from 'react-router-dom'
 import type { PropsWithChildren } from 'react'
-import { GarageBackdrop } from '../../../shared/game/GarageBackdrop.tsx'
+import { GameSettings } from '../../../shared/game/GameSettings.tsx'
 
 export function AuthLayout({ children }: PropsWithChildren) {
   return (
     <main className="auth-shell">
-      <GarageBackdrop />
       <section className="auth-intro">
-        <Link className="auth-brand" to="/">
-          Synapse Racing
-        </Link>
+        <div className="auth-intro__header">
+          <Link className="auth-brand" to="/">
+            ← SYNAPSE / RACING
+          </Link>
+          <GameSettings />
+        </div>
         <div>
           <p className="eyebrow">Acceso al paddock</p>
-          <h1>TODO EMPIEZA EN EL GARAJE.</h1>
-          <p>
-            Desarrolla pilotos autonomos con NEAT y lleva tus resultados a la
-            pista contra otros jugadores.
-          </p>
+          <h1>
+            TU LUGAR <br />
+            EN LA <br />
+            <em>PARRILLA.</em>
+          </h1>
+          <p>Cada generación, más cerca de la vuelta perfecta.</p>
         </div>
       </section>
       <section className="auth-form-panel">{children}</section>

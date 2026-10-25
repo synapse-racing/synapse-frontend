@@ -39,7 +39,7 @@ export function GameSettings() {
             checked={preferences.sound}
             onChange={(e) => update({ sound: e.target.checked })}
           />{' '}
-          Sonidos del menú
+          Sonidos del menú y motores
         </label>
         <label className="setting-toggle">
           <input
@@ -48,6 +48,14 @@ export function GameSettings() {
             onChange={(e) => update({ reducedMotion: e.target.checked })}
           />{' '}
           Reducir movimiento de cámara
+        </label>
+        <label className="setting-toggle">
+          <input
+            type="checkbox"
+            checked={preferences.pauseMenuAnimation}
+            onChange={(e) => update({ pauseMenuAnimation: e.target.checked })}
+          />{' '}
+          Pausar animación de fondo
         </label>
         <button className="primary-button" onClick={() => setOpen(false)}>
           Volver al juego

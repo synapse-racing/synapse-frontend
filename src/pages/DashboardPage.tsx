@@ -1,7 +1,7 @@
 import { useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../features/auth/context/useAuth.ts'
-import { GarageBackdrop } from '../shared/game/GarageBackdrop.tsx'
+import { useMenuStage } from '../shared/game/menu-stage-context.ts'
 import { GameSettings } from '../shared/game/GameSettings.tsx'
 import {
   playMenuSound,
@@ -10,11 +10,11 @@ import {
 
 export function DashboardPage() {
   const auth = useAuth()
+  const { preview } = useMenuStage()
   const menu = useRef<HTMLElement>(null)
   const { preferences } = useGamePreferences()
   return (
     <main className="game-shell dashboard">
-      <GarageBackdrop />
       <header className="game-header">
         <Link className="wordmark" to="/">
           SYNAPSE / RACING
@@ -50,7 +50,12 @@ export function DashboardPage() {
             ]?.focus()
           }}
         >
-          <Link to="/training" onClick={() => playMenuSound(preferences.sound)}>
+          <Link
+            to="/training"
+            onFocus={() => preview('desert')}
+            onMouseEnter={() => preview('desert')}
+            onClick={() => playMenuSound(preferences.sound)}
+          >
             <span className="menu-index">01</span>
             <div>
               <h2>ENTRENAMIENTO</h2>
@@ -60,6 +65,8 @@ export function DashboardPage() {
           </Link>
           <Link
             to="/multiplayer"
+            onFocus={() => preview('tournament')}
+            onMouseEnter={() => preview('tournament')}
             onClick={() => playMenuSound(preferences.sound)}
           >
             <span className="menu-index">02</span>
