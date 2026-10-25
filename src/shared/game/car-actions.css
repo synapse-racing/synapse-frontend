@@ -1,0 +1,78 @@
+.car-actions {
+  position: absolute;
+  top: clamp(14rem, 35vh, 18rem);
+  right: 1rem;
+  z-index: 4;
+  width: min(270px, calc(100% - 2rem));
+  padding: 1rem;
+  background: #14211ff2;
+  border: 1px solid #c2c9b538;
+  border-top: 2px solid var(--accent);
+  box-shadow: 0 10px 35px #0005;
+  pointer-events: auto;
+}
+.car-actions header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+.car-actions h3 {
+  margin: 0;
+  font: 700 14px monospace;
+}
+.car-actions header button {
+  min-width: 44px;
+  padding: 0.3rem;
+  border: 0;
+  background: transparent;
+  font-size: 22px;
+}
+.car-actions p {
+  margin: 0.25rem 0 1rem;
+  font: 12px/1.6 monospace;
+  color: #b9c7b4;
+}
+.car-actions > button {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 0.5rem;
+  font-size: 13px;
+}
+.car-actions .car-actions__eliminate {
+  color: #ffb09c;
+  border-color: #c8664b80;
+  background: #382522;
+}
+.race-standings__select {
+  pointer-events: auto;
+  min-height: 32px;
+  border: 0;
+  padding: 0 0.25rem;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+}
+.race-standings {
+  max-height: calc(100svh - 14rem);
+  overflow: auto;
+  pointer-events: auto;
+}
+.multiplayer-race .car-actions {
+  top: 21rem;
+}
+@media (min-width: 601px) and (max-width: 900px) {
+  .neat-lab .telemetry-panel {
+    top: 11rem;
+  }
+}
+@media (max-height: 600px) {
+  .car-actions,
+  .multiplayer-race .car-actions {
+    top: auto;
+    bottom: 5.5rem;
+  }
+}

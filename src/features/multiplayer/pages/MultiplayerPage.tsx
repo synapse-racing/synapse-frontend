@@ -81,7 +81,11 @@ export function MultiplayerPage() {
   }
 
   const currentUserId = auth.user?.id ?? ''
-  const racing = room && (room.status !== 'LOBBY' || result !== null || snapshot?.status === 'FINISHED')
+  const racing =
+    room &&
+    (room.status !== 'LOBBY' ||
+      result !== null ||
+      snapshot?.status === 'FINISHED')
 
   return (
     <main className="multiplayer-page">
@@ -102,8 +106,14 @@ export function MultiplayerPage() {
         <MultiplayerRace
           currentUserId={currentUserId}
           controlsDisabled={connection !== 'connected'}
+          onEliminateCar={(userId, startAt) => {
+            setError(null)
+            socketRef.current?.emit('race:eliminate', { userId, startAt })
+          }}
           error={error}
-          onTimeScaleChange={(timeScale) => socketRef.current?.emit('race:set-speed', { timeScale })}
+          onTimeScaleChange={(timeScale) =>
+            socketRef.current?.emit('race:set-speed', { timeScale })
+          }
           onLeave={leaveRoom}
           onReturnToRoom={() => {
             setResult(null)

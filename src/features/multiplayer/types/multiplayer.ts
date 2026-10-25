@@ -40,7 +40,7 @@ export interface RacePlayerState {
   finishedAt: number | null
   disconnected: boolean
   eliminated: boolean
-  eliminationReason: 'COLLISION' | 'STALLED' | null
+  eliminationReason: 'COLLISION' | 'STALLED' | 'HOST' | null
   rank: number
 }
 
@@ -80,4 +80,5 @@ export interface ClientToServerEvents {
   'room:select-track': (input: { track: TrackRecipe }) => void
   'race:set-speed': (input: { timeScale: SimulationSpeed }) => void
   'race:start': () => void
+  'race:eliminate': (input: { userId: string; startAt: number }) => void
 }

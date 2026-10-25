@@ -21,6 +21,10 @@ interface NeatTrainingHudProps {
   onReset: () => void
   onSelectRun: () => void
   onStart: () => void
+  onAdvanceGeneration?: () => void
+  canAdvanceGeneration?: boolean
+  inspectingCar?: boolean
+  onDismissCar?: () => void
   persistenceStatus: PersistenceStatus
   localOnly?: boolean
   onRetrySave?: () => void
@@ -60,6 +64,10 @@ export function NeatTrainingHud({
   onReset,
   onSelectRun,
   onStart,
+  onAdvanceGeneration,
+  canAdvanceGeneration = false,
+  inspectingCar = false,
+  onDismissCar,
   persistenceStatus,
   localOnly = false,
   onRetrySave,
@@ -103,6 +111,14 @@ export function NeatTrainingHud({
           </span>
         </div>
         <div className="neat-hud__actions">
+          {onAdvanceGeneration && (
+            <button
+              disabled={!canAdvanceGeneration}
+              onClick={onAdvanceGeneration}
+            >
+              Pasar de generación
+            </button>
+          )}
           <SimulationSpeedControl
             speed={timeScale}
             onChange={onTimeScaleChange}
@@ -141,6 +157,7 @@ export function NeatTrainingHud({
             onClick={() => {
               setTelemetry(!telemetry)
               setControls(false)
+              onDismissCar?.()
             }}
           >
             Telemetría
@@ -150,6 +167,7 @@ export function NeatTrainingHud({
             onClick={() => {
               setControls(!controls)
               setTelemetry(false)
+              onDismissCar?.()
             }}
           >
             Opciones
@@ -184,7 +202,7 @@ export function NeatTrainingHud({
         </p>
         <h2>Generación {generation + 1}</h2>
       </section>
-      {(controls || status === 'paused') && !telemetry && (
+      {!inspectingCar && (controls || status === 'paused') && !telemetry && (
         <section
           className="telemetry-panel"
           aria-label="Opciones del entrenamiento"
@@ -218,7 +236,7 @@ export function NeatTrainingHud({
           </p>
         </section>
       )}
-      {telemetry && (
+      {telemetry && !inspectingCar && (
         <section className="telemetry-panel" aria-label="Telemetría NEAT">
           <h3>Sensores de los autos</h3>
           <label className="setting-toggle">
