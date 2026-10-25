@@ -8,6 +8,7 @@ import { DashboardPage } from './pages/DashboardPage.tsx'
 import { NotFoundPage } from './pages/NotFoundPage.tsx'
 import { TitlePage } from './pages/TitlePage.tsx'
 import { GamePreferences } from './shared/game/GamePreferences.tsx'
+import { MenuStage } from './shared/game/MenuStage.tsx'
 
 const NeatTrainingPage = lazy(() =>
   import('./features/training/pages/NeatTrainingPage.tsx').then((module) => ({
@@ -25,13 +26,17 @@ function App() {
   return (
     <GamePreferences>
       <Routes>
-        <Route path="/" element={<TitlePage />} />
-        <Route element={<PublicOnlyRoute />}>
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
+        <Route element={<MenuStage />}>
+          <Route path="/" element={<TitlePage />} />
+          <Route element={<PublicOnlyRoute />}>
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
+          </Route>
+          <Route element={<ProtectedRoute />}>
+            <Route path="/dashboard" element={<DashboardPage />} />
+          </Route>
         </Route>
         <Route element={<ProtectedRoute />}>
-          <Route path="/dashboard" element={<DashboardPage />} />
           <Route
             path="/training"
             element={
