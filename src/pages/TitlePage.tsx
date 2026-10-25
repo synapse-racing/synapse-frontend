@@ -31,11 +31,15 @@ export function TitlePage() {
   return (
     <main className="game-shell title-screen">
       <header className="game-header">
-        <span className="wordmark">SYNAPSE <span className="wordmark__slash">/</span> MOTORSPORT</span>
+        <span className="wordmark">
+          SYNAPSE <span className="wordmark__slash">/</span> MOTORSPORT
+        </span>
         <GameSettings />
       </header>
       <div className="title-content">
-        <p className="eyebrow title-kicker"><span /> EL PRÓXIMO PILOTO LO CREAS TÚ.</p>
+        <p className="eyebrow title-kicker">
+          <span /> EL PRÓXIMO PILOTO LO CREAS TÚ.
+        </p>
         <h1>
           SYNAPSE<span>RACING</span>
         </h1>
@@ -60,7 +64,9 @@ export function TitlePage() {
         </button>
       </div>
       <footer className="game-footer">
-        <span>NEAT POWERED <span className="footer-separator">/</span> HUMAN DRIVEN</span>
+        <span>
+          NEAT POWERED <span className="footer-separator">/</span> HUMAN DRIVEN
+        </span>
         <span>ENTRENA. EVOLUCIONA. COMPITE.</span>
       </footer>
     </main>

@@ -17,20 +17,33 @@ export function useExhibitionAudio(enabled: boolean, paused: boolean) {
         const gain = context.createGain()
         engine.type = 'sawtooth'
         overtone.type = 'triangle'
+        const initialRpm = 36 + Math.min(16, speed.current) * 5
+        engine.frequency.value = initialRpm
+        overtone.frequency.value = initialRpm * 2.02
         filter.type = 'lowpass'
         filter.frequency.value = 380
-        gain.gain.value = 0.007
-        engine.connect(filter); overtone.connect(filter)
-        filter.connect(gain); gain.connect(context.destination)
-        engine.start(); overtone.start()
+        gain.gain.value = 0
+        gain.gain.linearRampToValueAtTime(0.007, context.currentTime + 0.3)
+        engine.connect(filter)
+        overtone.connect(filter)
+        filter.connect(gain)
+        gain.connect(context.destination)
+        engine.start()
+        overtone.start()
         void context.resume().catch(() => {})
         timer = setInterval(() => {
           if (!context) return
           const rpm = 36 + Math.min(16, speed.current) * 5
           engine.frequency.setTargetAtTime(rpm, context.currentTime, 0.25)
-          overtone.frequency.setTargetAtTime(rpm * 2.02, context.currentTime, 0.25)
+          overtone.frequency.setTargetAtTime(
+            rpm * 2.02,
+            context.currentTime,
+            0.25,
+          )
         }, 150)
-      } catch { /* Audio is optional. */ }
+      } catch {
+        /* Audio is optional. */
+      }
     }
     if (interacted.current) start()
     window.addEventListener('pointerdown', start)
