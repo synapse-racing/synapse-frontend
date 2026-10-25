@@ -2,7 +2,11 @@ import { useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { SnapshotTimeline } from '../domain/snapshotTimeline.ts'
 import { SceneCanvas } from '../../../shared/three/SceneCanvas.tsx'
 import { TrackEnvironment } from '../../../shared/three/TrackEnvironment.tsx'
-import { RaceCamera, type CarPose } from '../../../shared/three/RaceCamera.tsx'
+import {
+  RaceCamera,
+  type CarPose,
+  type RaceCameraMode,
+} from '../../../shared/three/RaceCamera.tsx'
 import {
   SimulationSpeedControl,
   type SimulationSpeed,
@@ -42,9 +46,7 @@ export function MultiplayerRace({
   room,
   snapshot,
 }: MultiplayerRaceProps) {
-  const [cameraMode, setCameraMode] = useState<'overview' | 'follow'>(
-    'overview',
-  )
+  const [cameraMode, setCameraMode] = useState<RaceCameraMode>('overview')
   const [observedId, setObservedId] = useState(currentUserId)
   const [inspectedCar, setInspectedCar] = useState<{
     id: string
@@ -52,9 +54,23 @@ export function MultiplayerRace({
   } | null>(null)
   const poses = useRef(new Map<string, CarPose>())
   const [timeline] = useState(() => new SnapshotTimeline())
+  const previousSnapshot = useRef(snapshot)
   useLayoutEffect(() => {
     timeline.push(snapshot, performance.now())
   }, [snapshot, timeline])
+  useLayoutEffect(() => {
+    const previous = previousSnapshot.current
+    previousSnapshot.current = snapshot
+    if (
+      cameraMode === 'follow' &&
+      previous.startAt === snapshot.startAt &&
+      snapshot.players.find((p) => p.userId === observedId)
+        ?.eliminationReason === 'HOST' &&
+      previous.players.find((p) => p.userId === observedId)
+        ?.eliminationReason !== 'HOST'
+    )
+      setCameraMode('free')
+  }, [snapshot, cameraMode, observedId])
   const currentPlayer = snapshot.players.find(
     (player) => player.userId === currentUserId,
   )
@@ -145,10 +161,10 @@ export function MultiplayerRace({
           {error && <span role="alert">{error}</span>}
           <button
             onClick={() =>
-              setCameraMode(cameraMode === 'overview' ? 'follow' : 'overview')
+              setCameraMode(cameraMode === 'follow' ? 'overview' : 'follow')
             }
           >
-            {cameraMode === 'overview' ? 'Seguir piloto' : 'Vista general'}
+            {cameraMode === 'follow' ? 'Vista general' : 'Seguir piloto'}
           </button>
           <label className="camera-select">
             Observar

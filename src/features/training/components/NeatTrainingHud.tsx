@@ -6,6 +6,7 @@ import {
   type SimulationSpeed,
 } from '../../../shared/game/SimulationSpeedControl.tsx'
 import { GameSettings } from '../../../shared/game/GameSettings.tsx'
+import type { RaceCameraMode } from '../../../shared/three/RaceCamera.tsx'
 
 export type TrainingStatus = 'idle' | 'running' | 'paused' | 'evolving'
 export type PersistenceStatus = 'idle' | 'saving' | 'saved' | 'error'
@@ -31,8 +32,8 @@ interface NeatTrainingHudProps {
   populationSize: number
   status: TrainingStatus
   trainingName: string
-  cameraMode?: 'overview' | 'follow'
-  onCameraModeChange?: (mode: 'overview' | 'follow') => void
+  cameraMode?: RaceCameraMode
+  onCameraModeChange?: (mode: RaceCameraMode) => void
   selectedCar?: number
   onSelectedCarChange?: (index: number) => void
   trackSeed?: number
@@ -127,11 +128,11 @@ export function NeatTrainingHud({
             <button
               onClick={() =>
                 onCameraModeChange(
-                  cameraMode === 'overview' ? 'follow' : 'overview',
+                  cameraMode === 'follow' ? 'overview' : 'follow',
                 )
               }
             >
-              {cameraMode === 'overview' ? 'Seguir auto' : 'Vista general'}
+              {cameraMode === 'follow' ? 'Vista general' : 'Seguir auto'}
             </button>
           )}
           {onSelectedCarChange && (

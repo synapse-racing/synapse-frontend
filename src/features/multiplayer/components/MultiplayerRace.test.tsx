@@ -79,6 +79,7 @@ it('lets the host follow and eliminate a car only in the active race', () => {
   expect(screen.getByLabelText('Observar')).toHaveValue('guest')
   fireEvent.click(screen.getByRole('button', { name: 'Eliminar auto' }))
   expect(input.onEliminateCar).toHaveBeenCalledWith('guest', 4000)
+  expect(screen.getByLabelText('Cámara')).toHaveTextContent('follow')
   input.snapshot = {
     ...input.snapshot,
     players: input.snapshot.players.map((p) =>
@@ -88,6 +89,7 @@ it('lets the host follow and eliminate a car only in the active race', () => {
     ),
   }
   view.rerender(<MultiplayerRace {...input} />)
+  expect(screen.getByLabelText('Cámara')).toHaveTextContent('free')
   expect(screen.getByRole('button', { name: 'Eliminar auto' })).toBeDisabled()
   expect(screen.getByLabelText('Opciones de guest')).toHaveTextContent(
     'Eliminado por el anfitrión',
@@ -126,4 +128,27 @@ it('lets any player follow, exposing elimination only after becoming host', () =
     />,
   )
   expect(screen.getByRole('button', { name: 'Eliminar auto' })).toBeDisabled()
+})
+
+it('releases a spectator camera when the host eliminates the followed car', () => {
+  const input = props()
+  input.currentUserId = 'guest'
+  const view = render(<MultiplayerRace {...input} />)
+  fireEvent.click(screen.getByRole('button', { name: 'Seguir a host' }))
+  view.rerender(
+    <MultiplayerRace
+      {...input}
+      snapshot={{
+        ...input.snapshot,
+        players: input.snapshot.players.map((p) =>
+          p.userId === 'host'
+            ? { ...p, eliminated: true, eliminationReason: 'HOST' }
+            : p,
+        ),
+      }}
+    />,
+  )
+  expect(screen.getByLabelText('Cámara')).toHaveTextContent('free')
+  fireEvent.click(screen.getByRole('button', { name: 'Seguir piloto' }))
+  expect(screen.getByLabelText('Cámara')).toHaveTextContent('follow')
 })

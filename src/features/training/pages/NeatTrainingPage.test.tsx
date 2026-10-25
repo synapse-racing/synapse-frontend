@@ -272,6 +272,7 @@ it('follows and eliminates a selected car and closes its panel without pausing',
   expect(mocks.scene!.selectedGenomeId).toBe(mocks.scene!.genomes[1].id)
   await user.click(screen.getByRole('button', { name: 'Eliminar auto' }))
   expect(controls[1].reason).toBe('manual')
+  expect(mocks.scene!.cameraMode).toBe('free')
   expect(screen.getByRole('button', { name: 'Eliminar auto' })).toBeDisabled()
   expect(screen.getByLabelText('Opciones de Auto 02')).toHaveTextContent(
     'Eliminado manualmente',
@@ -297,6 +298,11 @@ it('evolves after eliminating the last active car while paused', async () => {
   act(() => controls.slice(1).forEach((control) => control.finish('collision')))
   await user.click(screen.getByRole('button', { name: 'Pausar' }))
   act(() => mocks.scene!.onInspectCar(scene.genomes[0].id))
+  await user.click(
+    within(screen.getByLabelText('Opciones de Auto 01')).getByRole('button', {
+      name: 'Seguir auto',
+    }),
+  )
   expect(
     screen.queryByLabelText('Opciones del entrenamiento'),
   ).not.toBeInTheDocument()
@@ -308,4 +314,5 @@ it('evolves after eliminating the last active car while paused', async () => {
     ).toBeInTheDocument(),
   )
   expect(mocks.scene!.running).toBe(false)
+  expect(mocks.scene!.cameraMode).toBe('free')
 })

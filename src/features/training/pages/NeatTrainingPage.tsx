@@ -1,4 +1,5 @@
 import { SceneCanvas } from '../../../shared/three/SceneCanvas.tsx'
+import type { RaceCameraMode } from '../../../shared/three/RaceCamera.tsx'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   Suspense,
@@ -77,9 +78,7 @@ export function NeatTrainingPage() {
   const [alive, setAlive] = useState(engine.config.populationSize)
   const [metrics, setMetrics] = useState(() => createInitialMetrics(engine))
   const [currentBest, setCurrentBest] = useState(0)
-  const [cameraMode, setCameraMode] = useState<'overview' | 'follow'>(
-    'overview',
-  )
+  const [cameraMode, setCameraMode] = useState<RaceCameraMode>('overview')
   const [selectedCar, setSelectedCar] = useState(0)
   const [inspectedCar, setInspectedCar] = useState<string | null>(null)
   const [, refreshPanel] = useState(0)
@@ -355,6 +354,8 @@ export function NeatTrainingPage() {
       return
     resumeAfterEvolution.current = status === 'running'
     finishCar(id)
+    if (cameraMode === 'follow' && genomes[selectedCar]?.id === id)
+      setCameraMode('free')
     if (fitnessRef.current.size === genomes.length) {
       generationClosing.current = true
       setStatus('evolving')
