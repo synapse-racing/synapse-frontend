@@ -32,11 +32,11 @@ function App() {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
           </Route>
-          <Route element={<ProtectedRoute />}>
+          <Route element={<ProtectedRoute allowGuest />}>
             <Route path="/dashboard" element={<DashboardPage />} />
           </Route>
         </Route>
-        <Route element={<ProtectedRoute />}>
+        <Route element={<ProtectedRoute allowGuest />}>
           <Route
             path="/training"
             element={
@@ -56,21 +56,23 @@ function App() {
             path="/training/neat"
             element={<Navigate to="/training" replace />}
           />
-          <Route
-            path="/multiplayer"
-            element={
-              <Suspense
-                fallback={
-                  <main className="page">
-                    <p className="eyebrow">Torneo / Multijugador</p>
-                    <h1>Conectando pilotos</h1>
-                  </main>
-                }
-              >
-                <MultiplayerPage />
-              </Suspense>
-            }
-          />
+          <Route element={<ProtectedRoute />}>
+            <Route
+              path="/multiplayer"
+              element={
+                <Suspense
+                  fallback={
+                    <main className="page">
+                      <p className="eyebrow">Torneo / Multijugador</p>
+                      <h1>Conectando pilotos</h1>
+                    </main>
+                  }
+                >
+                  <MultiplayerPage />
+                </Suspense>
+              }
+            />
+          </Route>
         </Route>
         <Route path="*" element={<NotFoundPage />} />
       </Routes>

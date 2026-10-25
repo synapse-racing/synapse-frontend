@@ -1,7 +1,10 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import type { GenerationMetrics } from '../neat/population.ts'
-import { SimulationSpeedControl, type SimulationSpeed } from '../../../shared/game/SimulationSpeedControl.tsx'
+import {
+  SimulationSpeedControl,
+  type SimulationSpeed,
+} from '../../../shared/game/SimulationSpeedControl.tsx'
 import { GameSettings } from '../../../shared/game/GameSettings.tsx'
 
 export type TrainingStatus = 'idle' | 'running' | 'paused' | 'evolving'
@@ -19,6 +22,7 @@ interface NeatTrainingHudProps {
   onSelectRun: () => void
   onStart: () => void
   persistenceStatus: PersistenceStatus
+  localOnly?: boolean
   onRetrySave?: () => void
   populationSize: number
   status: TrainingStatus
@@ -57,6 +61,7 @@ export function NeatTrainingHud({
   onSelectRun,
   onStart,
   persistenceStatus,
+  localOnly = false,
   onRetrySave,
   populationSize,
   status,
@@ -98,7 +103,10 @@ export function NeatTrainingHud({
           </span>
         </div>
         <div className="neat-hud__actions">
-          <SimulationSpeedControl speed={timeScale} onChange={onTimeScaleChange} />
+          <SimulationSpeedControl
+            speed={timeScale}
+            onChange={onTimeScaleChange}
+          />
           {onCameraModeChange && (
             <button
               onClick={() =>
@@ -163,7 +171,10 @@ export function NeatTrainingHud({
       </header>
       {persistenceStatus === 'error' && onRetrySave && (
         <section className="telemetry-panel" role="alert">
-          <p>No se pudo guardar la generación. El entrenamiento está pausado para conservarla.</p>
+          <p>
+            No se pudo guardar la generación. El entrenamiento está pausado para
+            conservarla.
+          </p>
           <button onClick={onRetrySave}>Reintentar guardado</button>
         </section>
       )}
@@ -211,10 +222,18 @@ export function NeatTrainingHud({
         <section className="telemetry-panel" aria-label="Telemetría NEAT">
           <h3>Sensores de los autos</h3>
           <label className="setting-toggle">
-            <input type="checkbox" checked={showRaycasts} onChange={(event) => onShowRaycastsChange?.(event.target.checked)} />
+            <input
+              type="checkbox"
+              checked={showRaycasts}
+              onChange={(event) => onShowRaycastsChange?.(event.target.checked)}
+            />
             Mostrar raycasts
           </label>
-          <p className="hud-hint">Cinco rayos por auto, hasta 8 m. Rojo: detecta un borde. Turquesa: libre; amarillo si es el auto observado. Pausa el entrenamiento para inspeccionarlos.</p>
+          <p className="hud-hint">
+            Cinco rayos por auto, hasta 8 m. Rojo: detecta un borde. Turquesa:
+            libre; amarillo si es el auto observado. Pausa el entrenamiento para
+            inspeccionarlos.
+          </p>
           <h3>Generación anterior</h3>
           <dl>
             <dt>Mejor puntuación</dt>
@@ -242,7 +261,7 @@ export function NeatTrainingHud({
           <strong>{metrics.bestFitness.toFixed(0)}</strong>
         </div>
         <div>
-          <span>Guardado</span>
+          <span>{localOnly ? 'En este dispositivo' : 'En tu cuenta'}</span>
           <strong
             role="status"
             className={`persistence-state persistence-state--${persistenceStatus}`}

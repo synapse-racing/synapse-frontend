@@ -2,6 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { Link } from 'react-router-dom'
 import { ApiError } from '../../../shared/api/http.ts'
+import { requestGuestImport } from '../../training/persistence/import-guest-training.ts'
 import { AuthLayout } from '../components/AuthLayout.tsx'
 import { useAuth } from '../context/useAuth.ts'
 import {
@@ -20,6 +21,7 @@ export function RegisterPage() {
 
   const submit = handleSubmit(async (data) => {
     try {
+      if (auth.status === 'visitor') requestGuestImport()
       await auth.register(data)
     } catch (error) {
       setError('root', {
@@ -35,7 +37,7 @@ export function RegisterPage() {
     <AuthLayout>
       <form className="auth-form" onSubmit={submit} noValidate>
         <h2>Crear cuenta</h2>
-        <p className="auth-form__lead">Prepara tu primer laboratorio NEAT.</p>
+        <p className="auth-form__lead">{auth.status === 'visitor' ? 'Crea tu cuenta para guardar los entrenamientos de este dispositivo.' : 'Prepara tu primer laboratorio NEAT.'}</p>
 
         <label className="field">
           Nombre de usuario
