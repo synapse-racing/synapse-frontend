@@ -4,11 +4,13 @@ export interface Preferences {
   quality: 'low' | 'high'
   sound: boolean
   reducedMotion: boolean
+  pauseMenuAnimation: boolean
 }
 export const defaults: Preferences = {
   quality: 'high',
   sound: false,
   reducedMotion: false,
+  pauseMenuAnimation: false,
 }
 export const PreferencesContext = createContext({
   preferences: defaults,

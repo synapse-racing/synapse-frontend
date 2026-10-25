@@ -18,7 +18,6 @@ interface Props {
   paused: boolean
   reduced: boolean
   visible: boolean
-  onShot: (index: number) => void
   audioSpeed: MutableRefObject<number>
 }
 
@@ -28,7 +27,6 @@ export default function ExhibitionScene({
   paused,
   reduced,
   visible,
-  onShot,
   audioSpeed,
 }: Props) {
   const track = useMemo(
@@ -58,7 +56,7 @@ export default function ExhibitionScene({
   const speeds = useRef([0, 0, 0, 0])
 
   useFrame((_, delta) => {
-    const moving = !paused && !reduced && visible
+    const moving = !paused && visible
     if (moving) time.current += Math.min(delta, 0.05)
     const shot = exhibitionShot(time.current)
     const shotIndex = calm || reduced ? 0 : shot.index
@@ -66,7 +64,6 @@ export default function ExhibitionScene({
     const cut = previous.current !== identity
     if (cut) {
       previous.current = identity
-      onShot(shotIndex)
     }
     if (!moving && !cut) return
     for (let i = 0; i < 4; i++) {
@@ -129,7 +126,7 @@ export default function ExhibitionScene({
     // Frame the race on the open side of the menu instead of behind its text.
     right.copy(target).sub(position).cross(up).normalize()
     target.addScaledVector(right, size.width > 850 ? (calm ? 2.5 : -4.5) : -0.5)
-    if (cut || reduced) camera.position.copy(position)
+    if (cut) camera.position.copy(position)
     else
       camera.position.lerp(position, 1 - Math.exp(-5 * Math.min(delta, 0.05)))
     camera.lookAt(target)
@@ -169,9 +166,7 @@ export default function ExhibitionScene({
         >
           <RaceCarModel
             color={color}
-            getSpeed={() =>
-              paused || reduced || !visible ? 0 : speeds.current[i]
-            }
+            getSpeed={() => (paused || !visible ? 0 : speeds.current[i])}
           />
         </group>
       ))}

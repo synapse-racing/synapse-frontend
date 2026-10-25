@@ -40,14 +40,12 @@ export function ExhibitionBackdrop({
   calm,
   paused,
   reduced,
-  onShot,
   audioSpeed,
 }: {
   theme: MenuTheme
   calm: boolean
   paused: boolean
   reduced: boolean
-  onShot: (index: number) => void
   audioSpeed: MutableRefObject<number>
 }) {
   const [visible, setVisible] = useState(!document.hidden)
@@ -61,7 +59,7 @@ export function ExhibitionBackdrop({
       <Poster />
       <Suspense fallback={null}>
         <SceneCanvas
-          frameloop={paused || reduced || !visible ? 'demand' : 'always'}
+          frameloop={paused || !visible ? 'demand' : 'always'}
           fallback={
             <div className="exhibition-unavailable">
               Exhibición en pausa · vista estática
@@ -74,7 +72,6 @@ export function ExhibitionBackdrop({
             paused={paused}
             reduced={reduced}
             visible={visible}
-            onShot={onShot}
             audioSpeed={audioSpeed}
           />
         </SceneCanvas>
