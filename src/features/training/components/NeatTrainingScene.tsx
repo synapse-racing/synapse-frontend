@@ -4,7 +4,11 @@ import type { TrackDefinition } from '../domain/track.ts'
 import type { Genome } from '../neat/genes.ts'
 import { NeatVehicle } from './NeatVehicle.tsx'
 import { TrackEnvironment } from '../../../shared/three/TrackEnvironment.tsx'
-import { RaceCamera, type CarPose } from '../../../shared/three/RaceCamera.tsx'
+import {
+  RaceCamera,
+  type CarPose,
+  type RaceCameraMode,
+} from '../../../shared/three/RaceCamera.tsx'
 import type {
   AgentFinishReason,
   RegisterAgentControl,
@@ -24,7 +28,7 @@ interface NeatTrainingSceneProps {
   timeScale: number
   running: boolean
   track: TrackDefinition
-  cameraMode: 'overview' | 'follow'
+  cameraMode: RaceCameraMode
   selectedGenomeId: string
   showRaycasts: boolean
 }
