@@ -50,7 +50,12 @@ export function DashboardPage() {
             ]?.focus()
           }}
         >
-          <Link to="/training" onFocus={() => preview('desert')} onMouseEnter={() => preview('desert')} onClick={() => playMenuSound(preferences.sound)}>
+          <Link
+            to="/training"
+            onFocus={() => preview('desert')}
+            onMouseEnter={() => preview('desert')}
+            onClick={() => playMenuSound(preferences.sound)}
+          >
             <span className="menu-index">01</span>
             <div>
               <h2>ENTRENAMIENTO</h2>

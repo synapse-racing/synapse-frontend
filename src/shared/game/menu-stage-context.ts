@@ -4,4 +4,6 @@ export type MenuTheme = 'desert' | 'tournament'
 export const MenuStageContext = createContext({
   preview: (_theme: MenuTheme) => {},
 })
-export function useMenuStage() { return useContext(MenuStageContext) }
+export function useMenuStage() {
+  return useContext(MenuStageContext)
+}
