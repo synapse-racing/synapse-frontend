@@ -5,13 +5,13 @@ import { GameSettings } from '../../../shared/game/GameSettings.tsx'
 export function AuthLayout({ children }: PropsWithChildren) {
   return (
     <main className="auth-shell">
+      <header className="auth-access-header">
+        <Link className="auth-brand" to="/">
+          ← SYNAPSE / RACING
+        </Link>
+        <GameSettings />
+      </header>
       <section className="auth-intro">
-        <div className="auth-intro__header">
-          <Link className="auth-brand" to="/">
-            ← SYNAPSE / RACING
-          </Link>
-          <GameSettings />
-        </div>
         <div>
           <p className="eyebrow">Acceso al paddock</p>
           <h1>

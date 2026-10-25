@@ -4,6 +4,7 @@ import { MenuStageContext, type MenuTheme } from './menu-stage-context.ts'
 import { useGamePreferences, useReducedMotion } from './preferences.ts'
 import { useExhibitionAudio } from './useExhibitionAudio.ts'
 import './menu-stage.css'
+import './guest-access.css'
 
 const ExhibitionBackdrop = lazy(() =>
   import('./ExhibitionBackdrop.tsx').then((module) => ({
