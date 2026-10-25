@@ -157,67 +157,6 @@
   color: var(--accent);
   padding: 0 0.65rem;
 }
-.exhibition-strip {
-  position: fixed;
-  z-index: 3;
-  right: clamp(1.25rem, 5vw, 5rem);
-  bottom: 5.6rem;
-  display: flex;
-  align-items: center;
-  gap: 1.1rem;
-  padding: 0.75rem 0 0.75rem 1rem;
-  border-left: 2px solid #ff7c43;
-  background: linear-gradient(90deg, #10201bcc, #10201b80);
-  backdrop-filter: blur(8px);
-}
-.exhibition-strip__label {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font: 9px monospace;
-  letter-spacing: 0.11em;
-  color: #e3cda6;
-}
-.exhibition-strip__label i {
-  display: block;
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: #ed9964;
-  box-shadow: 0 0 10px #ff9f4b55;
-}
-.exhibition-strip > div:not(.exhibition-shots) {
-  display: grid;
-  gap: 0.3rem;
-  min-width: 150px;
-}
-.exhibition-strip strong {
-  font:
-    11px Arial,
-    sans-serif;
-  color: #f7f1e5;
-}
-.exhibition-strip div > span {
-  font: 9px monospace;
-  color: #aebbad;
-}
-.exhibition-shots {
-  display: flex;
-  gap: 4px;
-}
-.exhibition-shots b {
-  width: 10px;
-  height: 2px;
-  background: #dce2c73b;
-}
-.exhibition-shots b.is-active {
-  background: #ffac75;
-}
-.exhibition-strip button {
-  min-width: 44px;
-  color: #f0dfbe;
-  border-left: 1px solid #d9dfc51c;
-}
 .menu-stage .paddock-content {
   width: min(650px, 100%);
   padding-bottom: 7rem;
@@ -298,11 +237,6 @@
 .menu-stage .auth-form .field {
   margin: 1.2rem 0;
 }
-.menu-stage--auth .exhibition-strip {
-  left: clamp(1.25rem, 5vw, 5rem);
-  right: auto;
-  bottom: 2rem;
-}
 @keyframes menu-arrive {
   from {
     opacity: 0;
@@ -345,12 +279,6 @@
   .menu-stage .auth-intro {
     padding: 2rem 1.5rem;
   }
-  .exhibition-shots {
-    display: none;
-  }
-  .exhibition-strip {
-    gap: 0.7rem;
-  }
 }
 @media (max-width: 600px) {
   .menu-stage .game-header {
@@ -386,21 +314,6 @@
   .menu-stage .game-footer > span:last-child {
     display: none;
   }
-  .exhibition-strip {
-    left: 1.5rem;
-    right: 1.5rem;
-    bottom: 4.2rem;
-    padding: 0.5rem 0 0.5rem 0.8rem;
-  }
-  .exhibition-strip button {
-    margin-left: auto;
-  }
-  .exhibition-strip__label {
-    font-size: 8px;
-  }
-  .exhibition-strip > div:not(.exhibition-shots) {
-    min-width: 0;
-  }
   .menu-stage .auth-shell {
     display: block;
     padding-bottom: 8rem;
@@ -423,12 +336,6 @@
     margin: 0 1rem;
     padding: 1.6rem;
     border: 1px solid #e2ddc41c;
-  }
-  .menu-stage--auth .exhibition-strip {
-    position: absolute;
-    bottom: 1.25rem;
-    left: 1.5rem;
-    right: 1.5rem;
   }
   .menu-stage .paddock-content {
     padding: 1.5rem 1.5rem 10rem;

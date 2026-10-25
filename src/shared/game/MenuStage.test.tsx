@@ -5,7 +5,12 @@ import { Link, MemoryRouter, Route, Routes } from 'react-router-dom'
 import { expect, it, vi } from 'vitest'
 import { MenuStage } from './MenuStage.tsx'
 import { useMenuStage } from './menu-stage-context.ts'
-import { defaults, PreferencesContext } from './preferences.ts'
+import {
+  defaults,
+  PreferencesContext,
+  useGamePreferences,
+} from './preferences.ts'
+import { GamePreferences } from './GamePreferences.tsx'
 
 const { disposed } = vi.hoisted(() => ({ disposed: vi.fn() }))
 vi.mock('./ExhibitionBackdrop.tsx', () => ({
@@ -13,10 +18,12 @@ vi.mock('./ExhibitionBackdrop.tsx', () => ({
     theme,
     paused,
     calm,
+    reduced,
   }: {
     theme: string
     paused: boolean
     calm: boolean
+    reduced: boolean
   }) => {
     useEffect(() => () => disposed(), [])
     return (
@@ -25,6 +32,7 @@ vi.mock('./ExhibitionBackdrop.tsx', () => ({
         data-theme={theme}
         data-paused={paused}
         data-calm={calm}
+        data-reduced={reduced}
       />
     )
   },
@@ -32,11 +40,15 @@ vi.mock('./ExhibitionBackdrop.tsx', () => ({
 
 function TestMenu() {
   const { preview } = useMenuStage()
+  const { update } = useGamePreferences()
   return (
     <>
       <Link to="/login">Acceder</Link>
       <Link to="/training">Jugar</Link>
       <button onClick={() => preview('desert')}>Ver desierto</button>
+      <button onClick={() => update({ pauseMenuAnimation: true })}>
+        Pausar fondo
+      </button>
     </>
   )
 }
@@ -56,15 +68,18 @@ function Navigation() {
 
 it('keeps the same backdrop and pause state while navigating to authentication', async () => {
   const user = userEvent.setup()
-  render(<Navigation />)
+  render(
+    <GamePreferences>
+      <Navigation />
+    </GamePreferences>,
+  )
   const backdrop = await screen.findByTestId('exhibition')
-  await user.click(screen.getByRole('button', { name: 'Pausar exhibición' }))
+  await user.click(screen.getByRole('button', { name: 'Pausar fondo' }))
   expect(backdrop).toHaveAttribute('data-paused', 'true')
   await user.click(screen.getByRole('link', { name: 'Acceder' }))
   expect(screen.getByTestId('exhibition')).toBe(backdrop)
   expect(backdrop).toHaveAttribute('data-calm', 'true')
-  await user.click(screen.getByRole('button', { name: 'Reanudar exhibición' }))
-  expect(backdrop).toHaveAttribute('data-paused', 'false')
+  expect(backdrop).toHaveAttribute('data-paused', 'true')
 })
 
 it('switches previews and releases the background when entering a game', async () => {
@@ -86,7 +101,7 @@ it('switches previews and releases the background when entering a game', async (
   expect(disposed).toHaveBeenCalledOnce()
 })
 
-it('respects reduced motion and presents a static exhibition', async () => {
+it('reduces camera movement without pausing the race or showing the exhibition panel', async () => {
   render(
     <PreferencesContext
       value={{
@@ -97,9 +112,10 @@ it('respects reduced motion and presents a static exhibition', async () => {
       <Navigation />
     </PreferencesContext>,
   )
-  expect(screen.getByText('Vista estática')).toBeInTheDocument()
+  const backdrop = await screen.findByTestId('exhibition')
+  expect(backdrop).toHaveAttribute('data-reduced', 'true')
+  expect(backdrop).toHaveAttribute('data-paused', 'false')
   expect(
-    screen.getByRole('button', { name: 'Pausar exhibición' }),
-  ).toBeDisabled()
-  expect(await screen.findByTestId('exhibition')).toBeInTheDocument()
+    screen.queryByLabelText('Controles de exhibición'),
+  ).not.toBeInTheDocument()
 })

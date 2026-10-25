@@ -49,6 +49,14 @@ export function GameSettings() {
           />{' '}
           Reducir movimiento de cámara
         </label>
+        <label className="setting-toggle">
+          <input
+            type="checkbox"
+            checked={preferences.pauseMenuAnimation}
+            onChange={(e) => update({ pauseMenuAnimation: e.target.checked })}
+          />{' '}
+          Pausar animación de fondo
+        </label>
         <button className="primary-button" onClick={() => setOpen(false)}>
           Volver al juego
         </button>

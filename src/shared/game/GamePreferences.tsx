@@ -13,6 +13,7 @@ export function GamePreferences({ children }: PropsWithChildren) {
         quality: saved.quality === 'low' ? 'low' : 'high',
         sound: saved.sound === true,
         reducedMotion: saved.reducedMotion === true,
+        pauseMenuAnimation: saved.pauseMenuAnimation === true,
       }
     } catch {
       return defaults
