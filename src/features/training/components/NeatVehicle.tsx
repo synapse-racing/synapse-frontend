@@ -55,6 +55,11 @@ export function NeatVehicle({
 }: NeatVehicleProps) {
   const meshRef = useRef<Group>(null)
   const state = useRef(createSimulationState(track))
+  const previousPose = useRef<CarPose>({
+    x: state.current.x,
+    z: state.current.z,
+    yaw: state.current.yaw,
+  })
   const accumulator = useRef(0)
   const latestFinish = useRef(onFinish)
   latestFinish.current = onFinish
@@ -74,6 +79,10 @@ export function NeatVehicle({
     if (!running || control.finished) return
     accumulator.current += Math.min(frameDelta, 0.25) * timeScale
     while (accumulator.current >= simulationStepSeconds && !control.finished) {
+      previousPose.current.x = state.current.x
+      previousPose.current.z = state.current.z
+      previousPose.current.yaw = state.current.yaw
+
       const simulation = state.current
       const [steering, throttle] = evaluateGenome(genome, [
         ...senseSimulation(simulation, track),
@@ -97,11 +106,24 @@ export function NeatVehicle({
       accumulator.current -= simulationStepSeconds
     }
 
+    const alpha = control.finished
+      ? 1
+      : Math.min(1, Math.max(0, accumulator.current / simulationStepSeconds))
+    const prev = previousPose.current
+    const curr = state.current
+    const renderX = prev.x + (curr.x - prev.x) * alpha
+    const renderZ = prev.z + (curr.z - prev.z) * alpha
+    const deltaYaw = Math.atan2(
+      Math.sin(curr.yaw - prev.yaw),
+      Math.cos(curr.yaw - prev.yaw),
+    )
+    const renderYaw = prev.yaw + deltaYaw * alpha
+
     if (meshRef.current) {
-      meshRef.current.position.set(state.current.x, 0, state.current.z)
-      meshRef.current.rotation.y = state.current.yaw
+      meshRef.current.position.set(renderX, 0, renderZ)
+      meshRef.current.rotation.y = renderYaw
     }
-    onPose(genome.id, state.current)
+    onPose(genome.id, { x: renderX, z: renderZ, yaw: renderYaw })
   }, -1)
 
   const hue = (index * 47) % 360
