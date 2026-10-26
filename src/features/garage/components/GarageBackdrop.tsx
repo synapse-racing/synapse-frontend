@@ -96,7 +96,7 @@ export function GarageBackdrop({
       <Suspense fallback={null}>
         <SceneCanvas
           frameloop={
-            !visible || paused || reduced || interactive ? 'demand' : 'always'
+            !visible ? 'demand' : 'always'
           }
           fallback={
             <div className="garage-unavailable">

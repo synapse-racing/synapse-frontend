@@ -8,9 +8,15 @@ import {
   SRGBColorSpace,
   Vector3,
 } from 'three'
+import {
+  paddockCarMotion,
+  paddockShot,
+  paddockShots,
+} from '../domain/paddock-showcase.ts'
 import { RaceCarModel } from '../../../shared/three/RaceCarModel.tsx'
 import { useGamePreferences } from '../../../shared/game/preferences.ts'
 import type { GarageBackdropProps } from './GarageBackdrop.tsx'
+import type { VehicleAppearance } from '../domain/appearance.ts'
 
 const carScale = 2.6
 
@@ -47,15 +53,25 @@ function useBaySign(number: number) {
 function GarageCamera({
   interactive,
   paused,
-  reduced,
   resetViewKey,
 }: Pick<
   GarageBackdropProps,
-  'interactive' | 'paused' | 'reduced' | 'resetViewKey'
+  'interactive' | 'paused' | 'resetViewKey'
 >) {
   const { camera, size, invalidate } = useThree()
   const controls = useRef<ComponentRef<typeof OrbitControls>>(null)
   const time = useRef(0)
+  const previousShotIndex = useRef(-1)
+  const vectors = useMemo(
+    () => ({
+      position: new Vector3(),
+      target: new Vector3(),
+      right: new Vector3(),
+      up: new Vector3(0, 1, 0),
+    }),
+    [],
+  )
+
   const framing = useMemo(() => {
     const small = size.width <= 760
     const position = new Vector3(
@@ -72,27 +88,72 @@ function GarageCamera({
     if (!small) target.addScaledVector(right, interactive ? -2.15 : -2.6)
     return { position, target }
   }, [size.width, interactive])
+
   useLayoutEffect(() => {
-    camera.position.copy(framing.position)
-    camera.lookAt(framing.target)
-    if (camera instanceof PerspectiveCamera) {
-      camera.fov = 42
-      camera.updateProjectionMatrix()
+    if (interactive) {
+      camera.position.copy(framing.position)
+      camera.lookAt(framing.target)
+      if (camera instanceof PerspectiveCamera) {
+        camera.fov = 42
+        camera.updateProjectionMatrix()
+      }
+      controls.current?.target.copy(framing.target)
+      controls.current?.update()
+      invalidate()
+    } else {
+      const initialShot = paddockShots[0]
+      const { position, target, right, up } = vectors
+      position.set(...initialShot.position)
+      target.set(...initialShot.target)
+      const small = size.width <= 760
+      right.copy(target).sub(position).cross(up).normalize()
+      target.addScaledVector(right, small ? -0.4 : -2.6)
+      camera.position.copy(position)
+      camera.lookAt(target)
+      if (camera instanceof PerspectiveCamera) {
+        camera.fov = initialShot.fov
+        camera.updateProjectionMatrix()
+      }
+      invalidate()
     }
-    controls.current?.target.copy(framing.target)
-    controls.current?.update()
-    invalidate()
-  }, [camera, framing, size.height, resetViewKey, invalidate])
+  }, [camera, framing, size.width, size.height, resetViewKey, invalidate, interactive, vectors])
+
   useFrame((_, delta) => {
-    if (interactive || paused || reduced) return
-    time.current += Math.min(delta, 0.05)
-    const angle = Math.sin(time.current * 0.09) * 0.055
-    camera.position
-      .copy(framing.position)
-      .applyAxisAngle(new Vector3(0, 1, 0), angle)
-    camera.position.y += Math.sin(time.current * 0.13) * 0.08
-    camera.lookAt(framing.target)
-  }, -1)
+    if (interactive || paused) return
+
+    const step = Math.min(delta, 0.05)
+    time.current += step
+
+    const { index, progress, shot } = paddockShot(time.current)
+    const cut = previousShotIndex.current !== index
+    if (cut) {
+      previousShotIndex.current = index
+    }
+
+    const { position, target, right, up } = vectors
+    position.set(
+      shot.position[0] + shot.drift[0] * progress,
+      shot.position[1] + shot.drift[1] * progress,
+      shot.position[2] + shot.drift[2] * progress,
+    )
+    target.set(shot.target[0], shot.target[1], shot.target[2])
+
+    const small = size.width <= 760
+    right.copy(target).sub(position).cross(up).normalize()
+    const menuOffset = small ? -0.4 : -2.6
+    target.addScaledVector(right, menuOffset)
+
+    if (camera instanceof PerspectiveCamera) {
+      if (camera.fov !== shot.fov) {
+        camera.fov = shot.fov
+        camera.updateProjectionMatrix()
+      }
+    }
+
+    camera.position.copy(position)
+    camera.lookAt(target)
+  })
+
   return interactive ? (
     <OrbitControls
       ref={controls}
@@ -109,6 +170,62 @@ function GarageCamera({
       dampingFactor={0.08}
     />
   ) : null
+}
+
+function PaddockCarShowcase({
+  appearance,
+  interactive,
+  paused,
+}: {
+  appearance: VehicleAppearance
+  interactive: boolean
+  paused: boolean
+}) {
+  const time = useRef(0)
+  const currentSteer = useRef(0)
+
+  useFrame((_, delta) => {
+    if (interactive) return
+    const step = Math.min(delta, 0.05)
+    if (!paused) {
+      time.current += step
+    }
+
+    const motion = paddockCarMotion(time.current, paused)
+    currentSteer.current = motion.steerAngle
+  })
+
+  return (
+    <group>
+      {!interactive && (
+        <group position={[0, 0.026, 0]}>
+          <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+            <circleGeometry args={[4.2, 48]} />
+            <meshStandardMaterial
+              color="#2a3336"
+              roughness={0.5}
+              metalness={0.35}
+            />
+          </mesh>
+          <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.002, 0]}>
+            <ringGeometry args={[4.12, 4.22, 48]} />
+            <meshStandardMaterial
+              color="#ff874e"
+              emissive="#ed632a"
+              emissiveIntensity={0.7}
+            />
+          </mesh>
+        </group>
+      )}
+
+      <group position={[0, 0.065, 0]} scale={carScale}>
+        <RaceCarModel
+          appearance={appearance}
+          getSteerAngle={() => currentSteer.current}
+        />
+      </group>
+    </group>
+  )
 }
 
 function Cabinet({ x, z }: { x: number; z: number }) {
@@ -163,7 +280,7 @@ export default function GarageScene({
   interactive,
   theme = 'tournament',
   paused = false,
-  reduced = false,
+  reduced: _reduced = false,
   resetViewKey = 0,
 }: GarageBackdropProps) {
   const { preferences } = useGamePreferences()
@@ -284,9 +401,11 @@ export default function GarageScene({
         </mesh>
       ))}
 
-      <group position={[0, 0.065, 0]} scale={carScale}>
-        <RaceCarModel appearance={appearance} />
-      </group>
+      <PaddockCarShowcase
+        appearance={appearance}
+        interactive={interactive}
+        paused={paused}
+      />
 
       {[-11, 11].map((x) => (
         <group key={x}>
@@ -470,7 +589,6 @@ export default function GarageScene({
       <GarageCamera
         interactive={interactive}
         paused={paused}
-        reduced={reduced}
         resetViewKey={resetViewKey}
       />
     </>

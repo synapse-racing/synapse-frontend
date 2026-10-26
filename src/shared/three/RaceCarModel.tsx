@@ -61,12 +61,16 @@ export function RaceCarModel({
   selected = false,
   getSpeed,
   faded = false,
+  steerAngle,
+  getSteerAngle,
 }: {
   appearance?: VehicleAppearance
   color?: string
   selected?: boolean
   getSpeed?: () => number
   faded?: boolean
+  steerAngle?: number
+  getSteerAngle?: () => number
 }) {
   const modelId = appearance?.modelId ?? defaultAppearance.modelId
   const primaryColor = appearance?.primaryColor ?? color
@@ -149,8 +153,12 @@ export function RaceCarModel({
   )
   useFrame((_, delta) => {
     const rotation = ((getSpeed?.() ?? 0) * Math.min(delta, 0.1)) / 0.23
-    wheels.forEach((wheel) => {
+    wheels.forEach((wheel, index) => {
       wheel.rotation.x -= rotation
+      const steer = getSteerAngle ? getSteerAngle() : steerAngle
+      if (steer !== undefined && (index === 0 || index === 1)) {
+        wheel.rotation.y = steer
+      }
     })
   })
   return (

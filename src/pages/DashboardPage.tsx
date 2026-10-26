@@ -138,9 +138,7 @@ export function DashboardPage() {
         <small>PERSONALIZAR ↗</small>
       </Link>
       <footer className="game-footer">
-        <span>
-          <kbd>↑ ↓</kbd> ELEGIR <kbd>ENTER</kbd> CONFIRMAR
-        </span>
+        <span />
         <span>NEAT / RACE LAB</span>
       </footer>
     </main>
