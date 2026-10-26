@@ -4,6 +4,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef } from 'react'
 import type { ComponentRef } from 'react'
 import {
   CanvasTexture,
+  MathUtils,
   PerspectiveCamera,
   SRGBColorSpace,
   Vector3,
@@ -17,6 +18,10 @@ import { RaceCarModel } from '../../../shared/three/RaceCarModel.tsx'
 import { useGamePreferences } from '../../../shared/game/preferences.ts'
 import type { GarageBackdropProps } from './GarageBackdrop.tsx'
 import type { VehicleAppearance } from '../domain/appearance.ts'
+import {
+  allowedCameraDistance,
+  cameraLimits,
+} from '../domain/garage-camera-bounds.ts'
 
 const carScale = 2.6
 
@@ -71,6 +76,10 @@ function GarageCamera({
     }),
     [],
   )
+  /** Distance the user asked for with the wheel, before wall collisions. */
+  const desiredDistance = useRef(0)
+  /** Distance actually applied to the camera on the previous frame. */
+  const appliedDistance = useRef(0)
 
   const framing = useMemo(() => {
     const small = size.width <= 760
@@ -99,6 +108,9 @@ function GarageCamera({
       }
       controls.current?.target.copy(framing.target)
       controls.current?.update()
+      const distance = framing.position.distanceTo(framing.target)
+      desiredDistance.current = distance
+      appliedDistance.current = distance
       invalidate()
     } else {
       const initialShot = paddockShots[0]
@@ -154,13 +166,63 @@ function GarageCamera({
     camera.lookAt(target)
   })
 
+  // Spring-arm camera: runs after OrbitControls (priority -1) and pulls the
+  // camera towards the car whenever a wall, the sign or furniture would get
+  // between them, easing back out once the view is clear again.
+  useFrame((_, delta) => {
+    const orbit = controls.current
+    if (!interactive || !orbit) return
+    const { position, target } = vectors
+
+    orbit.target.set(
+      MathUtils.clamp(orbit.target.x, -7, 7),
+      MathUtils.clamp(orbit.target.y, 0.3, 4),
+      MathUtils.clamp(orbit.target.z, -7, 6),
+    )
+    target.copy(orbit.target)
+    position.copy(camera.position).sub(target)
+    const current = position.length()
+    if (current < 1e-6) return
+    position.divideScalar(current)
+
+    const applied = appliedDistance.current || current
+    if (Math.abs(current - applied) > 1e-4) {
+      const ratio = current / applied
+      const base =
+        ratio < 1
+          ? Math.min(desiredDistance.current, applied)
+          : desiredDistance.current
+      desiredDistance.current = MathUtils.clamp(
+        base * ratio,
+        cameraLimits.minDistance,
+        cameraLimits.maxDistance,
+      )
+    } else if (!desiredDistance.current) {
+      desiredDistance.current = current
+    }
+
+    const allowed = allowedCameraDistance(
+      [target.x, target.y, target.z],
+      [position.x, position.y, position.z],
+      desiredDistance.current,
+    )
+    const next =
+      allowed < applied
+        ? allowed
+        : applied + (allowed - applied) * (1 - Math.exp(-8 * delta))
+
+    camera.position.copy(target).addScaledVector(position, next)
+    camera.lookAt(target)
+    appliedDistance.current = next
+  })
+
   return interactive ? (
     <OrbitControls
       ref={controls}
       makeDefault
       target={framing.target}
-      minDistance={7}
-      maxDistance={23}
+      minDistance={cameraLimits.hardMinDistance}
+      maxDistance={cameraLimits.maxDistance}
       minPolarAngle={0.25}
       maxPolarAngle={Math.PI / 2.12}
       rotateSpeed={0.55}
