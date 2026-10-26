@@ -1,6 +1,7 @@
 import { useFrame } from '@react-three/fiber'
 import { useEffect, useMemo, useRef } from 'react'
 import type { Group } from 'three'
+import type { VehicleAppearance } from '../../garage/domain/appearance.ts'
 import { RaceCarModel } from '../../../shared/three/RaceCarModel.tsx'
 import { SensorRays } from './SensorRays.tsx'
 import type { CarPose } from '../../../shared/three/RaceCamera.tsx'
@@ -22,6 +23,7 @@ import {
 
 interface NeatVehicleProps {
   genome: Genome
+  appearance?: VehicleAppearance
   index: number
   onFinish: (
     genomeId: string,
@@ -41,6 +43,7 @@ interface NeatVehicleProps {
 
 export function NeatVehicle({
   genome,
+  appearance,
   index,
   onFinish,
   onCheckpoint,
@@ -140,6 +143,9 @@ export function NeatVehicle({
         }}
       >
         <RaceCarModel
+          appearance={
+            appearance ? { ...appearance, number: index + 1 } : undefined
+          }
           color={`hsl(${hue},72%,56%)`}
           selected={selected}
           faded={control.reason === 'manual'}

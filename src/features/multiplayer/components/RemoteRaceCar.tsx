@@ -55,6 +55,7 @@ export function RemoteRaceCar({
       }}
     >
       <RaceCarModel
+        appearance={player.appearance}
         color={`hsl(${hue},72%,55%)`}
         selected={selected ?? isCurrentUser}
         faded={player.disconnected || player.eliminated}

@@ -21,6 +21,11 @@ const MultiplayerPage = lazy(() =>
     default: module.MultiplayerPage,
   })),
 )
+const GaragePage = lazy(() =>
+  import('./features/garage/pages/GaragePage.tsx').then((module) => ({
+    default: module.GaragePage,
+  })),
+)
 
 function App() {
   return (
@@ -34,6 +39,20 @@ function App() {
           </Route>
           <Route element={<ProtectedRoute allowGuest />}>
             <Route path="/dashboard" element={<DashboardPage />} />
+            <Route
+              path="/garage"
+              element={
+                <Suspense
+                  fallback={
+                    <main className="garage-loading">
+                      <p>Abriendo tu box…</p>
+                    </main>
+                  }
+                >
+                  <GaragePage />
+                </Suspense>
+              }
+            />
           </Route>
         </Route>
         <Route element={<ProtectedRoute allowGuest />}>

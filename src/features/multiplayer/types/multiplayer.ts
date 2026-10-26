@@ -1,10 +1,12 @@
 import type { TrackRecipe } from '../../training/domain/track.ts'
+import type { VehicleAppearance } from '../../garage/domain/appearance.ts'
 
 import type { SimulationSpeed } from '../../../shared/game/SimulationSpeedControl.tsx'
 
 export type RoomStatus = 'LOBBY' | 'COUNTDOWN' | 'RACING' | 'FINISHED'
 
 export interface RoomPlayer {
+  appearance?: VehicleAppearance
   userId: string
   username: string
   ready: boolean
@@ -28,6 +30,7 @@ export interface RaceInput {
 }
 
 export interface RacePlayerState {
+  appearance?: VehicleAppearance
   userId: string
   username: string
   x: number

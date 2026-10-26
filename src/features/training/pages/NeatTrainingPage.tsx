@@ -1,4 +1,5 @@
 import { SceneCanvas } from '../../../shared/three/SceneCanvas.tsx'
+import { useAppearance } from '../../garage/context/appearance-context.ts'
 import type { RaceCameraMode } from '../../../shared/three/RaceCamera.tsx'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import {
@@ -65,6 +66,7 @@ function createInitialMetrics(engine: NeatPopulation): GenerationMetrics {
 }
 
 export function NeatTrainingPage() {
+  const { appearance } = useAppearance()
   const auth = useAuth()
   const queryClient = useQueryClient()
   const isGuest = auth.status === 'visitor'
@@ -546,6 +548,7 @@ export function NeatTrainingPage() {
             key={generationKey}
             generationKey={generationKey}
             genomes={genomes}
+            appearance={appearance}
             onAgentFinish={handleAgentFinish}
             onInspectCar={inspectCar}
             onRegisterCar={registerCar}
