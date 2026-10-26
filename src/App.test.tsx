@@ -11,8 +11,12 @@ import {
   saveGuestCheckpoint,
 } from './features/training/persistence/guest-training.ts'
 import { NeatPopulation } from './features/training/neat/population.ts'
+import { defaultAppearance } from './features/garage/domain/appearance.ts'
 vi.mock('./shared/game/ExhibitionBackdrop.tsx', () => ({
   ExhibitionBackdrop: () => <div data-testid="exhibition-canvas" />,
+}))
+vi.mock('./features/garage/components/GarageBackdrop.tsx', () => ({
+  GarageBackdrop: () => <div data-testid="garage-canvas" />,
 }))
 
 const authenticatedUser = {
@@ -70,6 +74,11 @@ describe('authentication navigation', () => {
       if (url.endsWith('/auth/refresh')) {
         return jsonResponse({ message: 'Invalid session' }, 401)
       }
+      if (url.endsWith('/users/me/appearance'))
+        return jsonResponse({
+          appearance: defaultAppearance,
+          customized: false,
+        })
 
       return jsonResponse({
         accessToken: 'access-token',
@@ -97,7 +106,10 @@ describe('authentication navigation', () => {
         name: /A LA\s*PISTA/,
       }),
     ).toBeInTheDocument()
-    expect(fetchMock).toHaveBeenCalledTimes(2)
+    expect(fetchMock).toHaveBeenCalledWith(
+      expect.stringContaining('/users/me/appearance'),
+      expect.any(Object),
+    )
   })
 
   it('continues to the paddock when the session is restored', async () => {

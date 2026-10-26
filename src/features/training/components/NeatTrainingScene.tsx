@@ -1,4 +1,5 @@
 import { useRef } from 'react'
+import type { VehicleAppearance } from '../../garage/domain/appearance.ts'
 import type { AgentRuntime } from '../domain/fitness.ts'
 import type { TrackDefinition } from '../domain/track.ts'
 import type { Genome } from '../neat/genes.ts'
@@ -17,6 +18,7 @@ import type {
 interface NeatTrainingSceneProps {
   generationKey: string
   genomes: Genome[]
+  appearance?: VehicleAppearance
   onAgentFinish: (
     genomeId: string,
     runtime: AgentRuntime,
@@ -36,6 +38,7 @@ interface NeatTrainingSceneProps {
 export function NeatTrainingScene({
   generationKey,
   genomes,
+  appearance,
   onAgentFinish,
   onCheckpoint,
   timeScale,
@@ -55,6 +58,7 @@ export function NeatTrainingScene({
         <NeatVehicle
           key={`${generationKey}-${genome.id}`}
           genome={genome}
+          appearance={appearance}
           index={index}
           onFinish={onAgentFinish}
           onInspect={onInspectCar}

@@ -3,6 +3,7 @@ import type { FormEvent } from 'react'
 import type { RoomState } from '../types/multiplayer.ts'
 import type { TrainingRun } from '../../training/api/training.api.ts'
 import { TrackMap } from '../../../shared/game/TrackMap.tsx'
+import { vehicleCatalog } from '../../garage/domain/appearance.ts'
 
 interface MultiplayerLobbyProps {
   busy: boolean
@@ -36,7 +37,11 @@ export function MultiplayerLobby({
   const [code, setCode] = useState('')
   const [maxPlayers, setMaxPlayers] = useState('4')
   const capacity = Number(maxPlayers)
-  const validCapacity = /^\d+$/.test(maxPlayers) && Number.isInteger(capacity) && capacity >= 2 && capacity <= 64
+  const validCapacity =
+    /^\d+$/.test(maxPlayers) &&
+    Number.isInteger(capacity) &&
+    capacity >= 2 &&
+    capacity <= 64
   const [trackSeed, setTrackSeed] = useState(0)
   const roomTrackSeed = room?.track.seed
 
@@ -77,8 +82,15 @@ export function MultiplayerLobby({
                 onChange={(event) => setMaxPlayers(event.target.value)}
               />
             </label>
-            <p id="capacity-hint">Escribe un número entero entre 2 y 64 pilotos.</p>
-            <button disabled={busy || !validCapacity} onClick={() => { if (validCapacity) onCreate(capacity) }}>
+            <p id="capacity-hint">
+              Escribe un número entero entre 2 y 64 pilotos.
+            </p>
+            <button
+              disabled={busy || !validCapacity}
+              onClick={() => {
+                if (validCapacity) onCreate(capacity)
+              }}
+            >
               Crear codigo
             </button>
           </div>
@@ -136,11 +148,13 @@ export function MultiplayerLobby({
         <div>
           <span>Pista de la sala</span>
           <strong>
-            {room.track.version === 'grand-prix-v3' ? 'Grand Prix' : room.track.version === 'technical-loop-v2'
-              ? 'Circuito Técnico'
-              : room.track.version === 'curved-loop-v1'
-              ? 'Curved Loop'
-              : 'Clásico'}{' '}
+            {room.track.version === 'grand-prix-v3'
+              ? 'Grand Prix'
+              : room.track.version === 'technical-loop-v2'
+                ? 'Circuito Técnico'
+                : room.track.version === 'curved-loop-v1'
+                  ? 'Curved Loop'
+                  : 'Clásico'}{' '}
             #{room.track.seed}
           </strong>
           <small>
@@ -196,6 +210,14 @@ export function MultiplayerLobby({
                 {player.userId === room.hostUserId ? 'Host' : 'Piloto'}
               </small>
               <small>{player.genomeName ?? 'Sin piloto NEAT'}</small>
+              {player.appearance && (
+                <small>
+                  {vehicleCatalog.find(
+                    (model) => model.id === player.appearance?.modelId,
+                  )?.name ?? 'Auto'}{' '}
+                  · #{player.appearance.number}
+                </small>
+              )}
             </div>
             <i className={player.ready ? 'is-ready' : ''}>
               {player.ready ? 'Listo' : 'Esperando'}

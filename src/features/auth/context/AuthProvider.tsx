@@ -95,7 +95,16 @@ export function AuthProvider({ children }: PropsWithChildren) {
   }
 
   async function renewSession() {
+    const version = sessionVersion.current
     const session = await authApi.refreshSession()
+    if (
+      version !== sessionVersion.current ||
+      (user && session.user.id !== user.id)
+    ) {
+      throw new Error(
+        'La sesión cambió. Inicia sesión de nuevo para continuar.',
+      )
+    }
     applySession(session)
     return session.accessToken
   }
