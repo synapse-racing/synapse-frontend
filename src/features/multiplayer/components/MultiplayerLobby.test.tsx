@@ -26,7 +26,7 @@ describe('MultiplayerLobby', () => {
       onSelectGenome={vi.fn()} onSelectTrack={vi.fn()} onStart={vi.fn()}
       room={null} trainingRuns={[]} />)
     const input = screen.getByRole('spinbutton', { name: 'Capacidad' })
-    const create = screen.getByRole('button', { name: 'Crear codigo' })
+    const create = screen.getByRole('button', { name: 'Crear código' })
     for (const value of ['', '1', '65', '2.5', '-2']) {
       await user.clear(input)
       if (value) await user.type(input, value)

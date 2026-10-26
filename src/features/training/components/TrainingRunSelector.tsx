@@ -41,7 +41,7 @@ export function TrainingRunSelector({
           <p className="eyebrow">01 / Campo de pruebas</p>
           <Link to="/dashboard">← Paddock</Link>
         </div>
-        <h1>Prepara tu escuderia.</h1>
+        <h1>Prepara tu escudería.</h1>
         <p className="run-selector__lead">
           Genera un circuito reproducible, lanza una nueva temporada o recupera
           una partida guardada.
@@ -58,7 +58,7 @@ export function TrainingRunSelector({
           onSubmit={(event) => void submit(event)}
         >
           <label>
-            Nombre de la escuderia
+            Nombre de la escudería
             <input
               aria-label="Nombre del entrenamiento"
               maxLength={80}
@@ -103,7 +103,7 @@ export function TrainingRunSelector({
             </span>
           </label>
           <details className="neat-advanced">
-            <summary>Telemetria avanzada</summary>
+            <summary>Telemetría avanzada</summary>
             <p>
               24 pilotos · 5 sensores · 6 entradas y 2 salidas. Cada semilla
               reproduce el mismo trazado.

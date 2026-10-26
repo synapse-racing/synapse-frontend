@@ -13,7 +13,7 @@ export function ProtectedRoute({
   if (auth.status === 'loading') {
     return (
       <main className="page">
-        <p className="eyebrow">Sincronizando sesion</p>
+        <p className="eyebrow">Sincronizando sesión</p>
         <h1>Cargando</h1>
       </main>
     )

@@ -8,7 +8,7 @@ import { MemoryRouter } from 'react-router-dom'
 
 const savedRun: TrainingRun = {
   id: '132f5af1-b50e-43ae-bab7-aee813b6a948',
-  name: 'Poblacion guardada',
+  name: 'Población guardada',
   status: 'PAUSED',
   seed: 42170,
   currentGeneration: 8,
@@ -39,7 +39,7 @@ describe('TrainingRunSelector', () => {
     )
 
     await user.click(
-      screen.getByRole('button', { name: /^Poblacion guardada/ }),
+      screen.getByRole('button', { name: /^Población guardada/ }),
     )
     expect(onLoad).toHaveBeenCalledWith(savedRun)
     expect(screen.getByText(/Gen. 8/)).toBeInTheDocument()

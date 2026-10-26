@@ -91,15 +91,15 @@ export function MultiplayerLobby({
                 if (validCapacity) onCreate(capacity)
               }}
             >
-              Crear codigo
+              Crear código
             </button>
           </div>
           <form onSubmit={join}>
             <h2>Unirse</h2>
             <label>
-              Codigo de sala
+              Código de sala
               <input
-                aria-label="Codigo de sala"
+                aria-label="Código de sala"
                 maxLength={6}
                 onChange={(event) =>
                   setCode(
@@ -137,7 +137,7 @@ export function MultiplayerLobby({
       <p className="eyebrow">Torneo / Sala privada</p>
       <h1 className="lobby-heading">Parrilla de salida.</h1>
       <div className="lobby-code">
-        <span>Codigo privado</span>
+        <span>Código privado</span>
         <strong>{room.code}</strong>
         <small>
           {room.players.length}/{room.maxPlayers} pilotos

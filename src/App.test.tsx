@@ -62,7 +62,7 @@ describe('authentication navigation', () => {
     expect(enter).toBeEnabled()
     await userEvent.keyboard('{Enter}')
     expect(
-      await screen.findByRole('heading', { name: 'Iniciar sesion' }),
+      await screen.findByRole('heading', { name: 'Iniciar sesión' }),
     ).toBeInTheDocument()
     expect(screen.getByTestId('exhibition-canvas')).toBe(exhibition)
   })
@@ -98,7 +98,7 @@ describe('authentication navigation', () => {
       await screen.findByLabelText('Correo'),
       'driver@example.com',
     )
-    await user.type(screen.getByLabelText('Contrasena'), 'secure-pass-123')
+    await user.type(screen.getByLabelText('Contraseña'), 'secure-pass-123')
     await user.click(screen.getByRole('button', { name: 'Ingresar' }))
 
     expect(
@@ -132,7 +132,7 @@ describe('authentication navigation', () => {
       await screen.findByRole('navigation', { name: 'Modos de juego' }),
     ).toBeInTheDocument()
     expect(
-      screen.queryByRole('heading', { name: 'Iniciar sesion' }),
+      screen.queryByRole('heading', { name: 'Iniciar sesión' }),
     ).not.toBeInTheDocument()
     const training = screen.getByRole('link', { name: /ENTRENAMIENTO/ })
     training.focus()
@@ -228,7 +228,7 @@ describe('authentication navigation', () => {
     )
     await user.type(screen.getByLabelText('Nombre de usuario'), 'driver_one')
     await user.type(screen.getByLabelText('Correo'), 'driver@example.com')
-    await user.type(screen.getByLabelText('Contrasena'), 'secure-pass-123')
+    await user.type(screen.getByLabelText('Contraseña'), 'secure-pass-123')
     await user.click(screen.getByRole('button', { name: 'Crear cuenta' }))
     expect(await screen.findByRole('alert')).toHaveTextContent(
       'siguen en este dispositivo',

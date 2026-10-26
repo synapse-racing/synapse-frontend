@@ -22,10 +22,10 @@ export class AppErrorBoundary extends Component<
     if (this.state.failed) {
       return (
         <main className="fatal-error">
-          <p className="eyebrow">Error de aplicacion</p>
+          <p className="eyebrow">Error de aplicación</p>
           <h1>No pudimos renderizar esta pantalla.</h1>
           <p>
-            La sesion y los entrenamientos guardados permanecen seguros. Puedes
+            La sesión y los entrenamientos guardados permanecen seguros. Puedes
             recargar o volver al inicio.
           </p>
           <div>

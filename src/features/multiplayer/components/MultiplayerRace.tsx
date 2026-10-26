@@ -184,7 +184,7 @@ export function MultiplayerRace({
           <GameSettings />
         </div>
         <div className="race-position">
-          <span>Posicion</span>
+          <span>Posición</span>
           <strong>{currentPlayer?.rank ?? '-'}</strong>
           <small>de {snapshot.players.length}</small>
         </div>
@@ -242,7 +242,7 @@ export function MultiplayerRace({
       {result && (
         <div className="race-results">
           <div>
-            <p className="eyebrow">Clasificacion oficial</p>
+            <p className="eyebrow">Clasificación oficial</p>
             <h2>Carrera finalizada</h2>
             <ol>
               {result.players.map((player) => (

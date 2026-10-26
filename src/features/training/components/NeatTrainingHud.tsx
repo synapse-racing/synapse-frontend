@@ -264,7 +264,7 @@ export function NeatTrainingHud({
           </dl>
         </section>
       )}
-      <section className="neat-metrics" aria-label="Metricas NEAT">
+      <section className="neat-metrics" aria-label="Métricas NEAT">
         <div>
           <span>Vivos</span>
           <strong>

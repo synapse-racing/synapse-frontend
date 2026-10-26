@@ -56,7 +56,7 @@ export function RegisterPage() {
         </label>
 
         <label className="field">
-          Contrasena
+          Contraseña
           <input
             type="password"
             autoComplete="new-password"
@@ -73,7 +73,7 @@ export function RegisterPage() {
           {isSubmitting ? 'Creando cuenta...' : 'Crear cuenta'}
         </button>
         <p className="auth-form__switch">
-          ¿Ya tienes cuenta? <Link to="/login">Inicia sesion</Link>
+          ¿Ya tienes cuenta? <Link to="/login">Inicia sesión</Link>
         </p>
       </form>
     </AuthLayout>

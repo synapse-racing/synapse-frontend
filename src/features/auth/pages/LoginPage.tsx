@@ -26,7 +26,7 @@ export function LoginPage() {
         message:
           error instanceof ApiError
             ? error.message
-            : 'No se pudo iniciar sesion',
+            : 'No se pudo iniciar sesión',
       })
     }
   })
@@ -34,8 +34,8 @@ export function LoginPage() {
   return (
     <AuthLayout>
       <form className="auth-form" onSubmit={submit} noValidate>
-        <h2>Iniciar sesion</h2>
-        <p className="auth-form__lead">Continua desde tu ultima generacion.</p>
+        <h2>Iniciar sesión</h2>
+        <p className="auth-form__lead">Continúa desde tu última generación.</p>
 
         <label className="field">
           Correo
@@ -46,7 +46,7 @@ export function LoginPage() {
         </label>
 
         <label className="field">
-          Contrasena
+          Contraseña
           <input
             type="password"
             autoComplete="current-password"
