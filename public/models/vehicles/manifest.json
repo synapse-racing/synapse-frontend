@@ -1,0 +1,38 @@
+{
+  "formula": {
+    "high": {
+      "bytes": 659432,
+      "triangles": 28426,
+      "draws": 23
+    },
+    "low": {
+      "bytes": 209868,
+      "triangles": 7468,
+      "draws": 15
+    }
+  },
+  "gt": {
+    "high": {
+      "bytes": 894796,
+      "triangles": 42380,
+      "draws": 24
+    },
+    "low": {
+      "bytes": 235248,
+      "triangles": 10304,
+      "draws": 16
+    }
+  },
+  "prototype": {
+    "high": {
+      "bytes": 894076,
+      "triangles": 40714,
+      "draws": 24
+    },
+    "low": {
+      "bytes": 238244,
+      "triangles": 9658,
+      "draws": 16
+    }
+  }
+}

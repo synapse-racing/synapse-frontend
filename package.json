@@ -7,6 +7,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "build:vehicles": "node scripts/vehicles/export.mjs",
     "lint": "oxlint",
     "test": "vitest run",
     "test:race-parity": "node scripts/check-race-parity.cjs",

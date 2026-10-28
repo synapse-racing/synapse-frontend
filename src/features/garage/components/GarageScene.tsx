@@ -282,6 +282,7 @@ function PaddockCarShowcase({
 
       <group position={[0, 0.065, 0]} scale={carScale}>
         <RaceCarModel
+          detail="high"
           appearance={appearance}
           getSteerAngle={() => currentSteer.current}
         />
